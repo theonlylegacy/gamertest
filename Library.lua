@@ -210,6 +210,7 @@ end
 
 Menu.Screen = Instance.new("ScreenGui")
 Menu.Screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Menu.Screen.DisplayOrder = 3
 protect_gui(Menu.Screen, CoreGui)
 Menu.ScreenSize = Menu.Screen.AbsoluteSize
 
