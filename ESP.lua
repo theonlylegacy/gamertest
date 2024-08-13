@@ -163,7 +163,7 @@ end
 do
 	local ScreenGui = Functions:Create("ScreenGui", {
 		Parent = CoreGui,
-                ZIndex = 2,
+                DisplayOrder = 2,
 		Name = "ESPHolder",
 	});
 
