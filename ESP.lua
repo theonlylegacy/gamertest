@@ -163,7 +163,7 @@ end
 do
 	local ScreenGui = Functions:Create("ScreenGui", {
 		Parent = CoreGui,
-                DisplayOrder = 2,
+		DisplayOrder = 2,
 		Name = "ESPHolder",
 	});
 
@@ -171,7 +171,7 @@ do
 		for _, v in Connections do
 			v:Disconnect()
 		end
-		
+
 		ScreenGui:Destroy()
 	end
 
@@ -209,8 +209,8 @@ do
 		local BottomRightDown = Functions:Create("Frame", {Parent = ScreenGui, BackgroundColor3 = Drawings.Boxes.Corner.RGB, Position = UDim2.new(0, 0, 0, 0)})
 		local Flag1 = Functions:Create("TextLabel", {Parent = ScreenGui, Position = UDim2.new(1, 0, 0, 0), Size = UDim2.new(0, 100, 0, 20), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, TextColor3 = RGB(255, 255, 255), Font = Enum.Font.Code, TextSize = ESP.FontSize, TextStrokeTransparency = 0, TextStrokeColor3 = RGB(0, 0, 0)})
 		local Flag2 = Functions:Create("TextLabel", {Parent = ScreenGui, Position = UDim2.new(1, 0, 0, 0), Size = UDim2.new(0, 100, 0, 20), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, TextColor3 = RGB(255, 255, 255), Font = Enum.Font.Code, TextSize = ESP.FontSize, TextStrokeTransparency = 0, TextStrokeColor3 = RGB(0, 0, 0)})
-		
-		
+
+
 		local Updater = function()
 			local Connection
 			local function HideESP()
@@ -238,7 +238,7 @@ do
 					Connection:Disconnect()
 				end
 			end
-			
+
 			Connection = TInsert(Connections, Euphoria.RunService.RenderStepped:Connect(function()
 				local Entry = ReplicationInterface.getEntry(Player)
 				local ThirdPersonObject = Entry and Entry:getThirdPersonObject()
@@ -246,10 +246,9 @@ do
 				local Character = Root and Root.Parent
 				local EntityHealth = Entry and Entry:getHealth()
 				local PName = Player.Name
-
 				local Drawings = ESP.Drawing
 
-				if Character and Root and EntityHealth and EntityHealth > 0 then
+				if Character and Root and EntityHealth and EntityHealth > 0 and ESP.Enabled then
 					local Pos, OnScreen = Cam:WorldToScreenPoint(Root.Position)
 					local Dist = (Cam.CFrame.Position - Root.Position).Magnitude / 3.5714285714
 
