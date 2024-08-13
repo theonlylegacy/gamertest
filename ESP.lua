@@ -250,7 +250,7 @@ do
 				local PName = Player.Name
 				local Drawings = ESP.Drawing
 
-				if Character and Root and EntityHealth and EntityHealth > 0 and WeaponControllerInterface:getActiveWeaponController() and not RoundSystemClientInterface.roundLock ESP.Enabled then
+				if Character and Root and EntityHealth and EntityHealth > 0 and WeaponControllerInterface:getActiveWeaponController() and not RoundSystemClientInterface.roundLock and ESP.Enabled then
 					local Pos, OnScreen = Cam:WorldToScreenPoint(Root.Position)
 					local Dist = (Cam.CFrame.Position - Root.Position).Magnitude / 3.5714285714
 
