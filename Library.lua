@@ -2752,5 +2752,5 @@ function Menu:Unload()
 end
 
 Menu.CurrentKeybinds = Menu.Keybinds()
-Menu.CurrentKeybinds:SetPosition(UDim2.new(0, 1, 0, 1))
-getgenv().Library = Menu
+Menu.CurrentKeybinds:SetPosition(UDim2.new(0, 10, 0, 410))
+return Menu
