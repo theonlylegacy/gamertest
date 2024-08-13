@@ -24,6 +24,7 @@ local Menu = {}
 local Tabs = {}
 local Items = {}
 local EventObjects = {} -- For updating items on menu property change
+local Connections = {}
 local Notifications = {}
 
 local Scaling = {True = true, Origin = nil, Size = nil}
@@ -40,7 +41,6 @@ local Selected = {
 }
 local SelectedTab
 local SelectedTabLines = {}
-
 
 local wait = task.wait
 local delay = task.delay
@@ -61,7 +61,6 @@ local UserInput = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local TextService = game:GetService("TextService")
 local TweenService = game:GetService("TweenService")
-
 
 local __Menu = {}
 setmetatable(Menu, {
@@ -91,7 +90,6 @@ Menu.Hue = 0
 Menu.IsVisible = false
 Menu.ScreenSize = Vector2.new()
 
-
 local function AddEventListener(self: GuiObject, Update: any)
     table.insert(EventObjects, {
         self = self,
@@ -99,14 +97,12 @@ local function AddEventListener(self: GuiObject, Update: any)
     })
 end
 
-
 local function CreateCorner(Parent: Instance, Pixels: number): UICorner
     local UICorner = Instance.new("UICorner")
     UICorner.Name = "Corner"
     UICorner.Parent = Parent
     return UICorner
 end
-
 
 local function CreateStroke(Parent: Instance, Color: Color3, Thickness: number, Transparency: number): UIStroke
     local UIStroke = Instance.new("UIStroke")
@@ -120,7 +116,6 @@ local function CreateStroke(Parent: Instance, Color: Color3, Thickness: number, 
     UIStroke.Parent = Parent
     return UIStroke
 end 
-
 
 local function CreateLine(Parent: Instance, Size: UDim2, Position: UDim2, Color: Color3): Frame
     local Line = Instance.new("Frame")
@@ -138,7 +133,6 @@ local function CreateLine(Parent: Instance, Size: UDim2, Position: UDim2, Color:
     return Line
 end
 
-
 local function CreateLabel(Parent: Instance, Name: string, Text: string, Size: UDim2, Position: UDim2): TextLabel
     local Label = Instance.new("TextLabel")
     Label.Name = Name
@@ -153,7 +147,6 @@ local function CreateLabel(Parent: Instance, Name: string, Text: string, Size: U
     Label.Parent = Parent
     return Label
 end
-
 
 local function UpdateSelected(Frame: Instance, Item: Item, Offset: UDim2)
     local Selected_Frame = Selected.Frame
@@ -178,13 +171,12 @@ local function UpdateSelected(Frame: Instance, Item: Item, Offset: UDim2)
     end
 end
 
-
 local function SetDraggable(self: GuiObject)
     table.insert(Draggables, self)
     local DragOrigin
     local GuiOrigin
 
-    self.InputBegan:Connect(function(Input: InputObject, Process: boolean)
+    table.insert(Connections, self.InputBegan:Connect(function(Input: InputObject, Process: boolean)
         if (not Dragging.Gui and not Dragging.True) and (Input.UserInputType == Enum.UserInputType.MouseButton1) then
             for _, v in ipairs(Draggables) do
                 v.ZIndex = 1
@@ -195,9 +187,9 @@ local function SetDraggable(self: GuiObject)
             DragOrigin = Vector2.new(Input.Position.X, Input.Position.Y)
             GuiOrigin = self.Position
         end
-    end)
+    end))
 
-    UserInput.InputChanged:Connect(function(Input: InputObject, Process: boolean)
+    table.insert(Connections, UserInput.InputChanged:Connect(function(Input: InputObject, Process: boolean)
         if Dragging.Gui ~= self then return end
         if not (UserInput:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)) then
             Dragging = {Gui = nil, True = false}
@@ -215,9 +207,8 @@ local function SetDraggable(self: GuiObject)
             local Position = UDim2.fromOffset(OffsetX, OffsetY)
 			self.Position = Position
         end
-    end)
+    end))
 end
-
 
 Menu.Screen = Instance.new("ScreenGui")
 Menu.Screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -261,7 +252,7 @@ MenuScaler_Button.TextColor3 = Color3.new(1, 1, 1)
 MenuScaler_Button.TextSize = 14
 MenuScaler_Button.AutoButtonColor = false
 MenuScaler_Button.Parent = Menu_Frame
-MenuScaler_Button.InputBegan:Connect(function(Input, Process)
+table.insert(Connections, MenuScaler_Button.InputBegan:Connect(function(Input, Process)
     if Process then return end
     if (Input.UserInputType == Enum.UserInputType.MouseButton1) then
         UpdateSelected()
@@ -271,8 +262,9 @@ MenuScaler_Button.InputBegan:Connect(function(Input, Process)
             Size = Menu_Frame.AbsoluteSize - Vector2.new(0, 36)
         }
     end
-end)
-MenuScaler_Button.InputEnded:Connect(function(Input, Process)
+end))
+
+table.insert(Connections, MenuScaler_Button.InputEnded:Connect(function(Input, Process)
     if (Input.UserInputType == Enum.UserInputType.MouseButton1) then
         UpdateSelected()
         Scaling = {
@@ -281,7 +273,7 @@ MenuScaler_Button.InputEnded:Connect(function(Input, Process)
             Size = nil
         }
     end
-end)
+end))
 
 Icon_Image.Name = "Icon"
 Icon_Image.BackgroundTransparency = 1
@@ -572,7 +564,7 @@ function Menu.Tab(Tab_Name: string): Tab
         AddEventListener(Frame, function()
             Frame.ScrollBarImageColor3 = Menu.Accent
         end)
-        Frame:GetPropertyChangedSignal("CanvasPosition"):Connect(UpdateSelected)
+        table.insert(Connections, Frame:GetPropertyChangedSignal("CanvasPosition"):Connect(UpdateSelected))
 
         ListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
         ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -596,9 +588,10 @@ function Menu.Tab(Tab_Name: string): Tab
         Button.BackgroundColor3 = Menu.ItemColor
         Button.BorderColor3 = Menu.BorderColor
     end)
-    Button.MouseButton1Click:Connect(function()
+    
+    table.insert(Connections, Button.MouseButton1Click:Connect(function()
         ChangeTab(Tab_Name)
-    end)
+    end))
     
     Frame.Name = Tab_Name .. "Tab"
     Frame.BackgroundTransparency = 1
@@ -689,16 +682,17 @@ function Menu.Label(Tab_Name: string, Container_Name: string, Name: string, Tool
     local Container = GetContainer(Tab_Name, Container_Name)
     local GuiLabel = CreateLabel(Container.self, "Label", Name, nil, UDim2.fromOffset(20, Container:GetHeight()))
 
-    GuiLabel.MouseEnter:Connect(function()
+    table.insert(Connections, GuiLabel.MouseEnter:Connect(function()
         if ToolTip then
             Menu:SetToolTip(true, ToolTip, GuiLabel)
         end
-    end)
-    GuiLabel.MouseLeave:Connect(function()
+    end))
+
+    table.insert(Connections, GuiLabel.MouseLeave:Connect(function()
         if ToolTip then
             Menu:SetToolTip(false)
         end
-    end)
+    end))
 
     local Label = {self = Label}
     Label.Name = Name
@@ -768,17 +762,19 @@ function Menu.Button(Tab_Name: string, Container_Name: string, Name: string, Cal
         GuiButton.BackgroundColor3 = Menu.ItemColor
         GuiButton.BorderColor3 = Menu.BorderColor
     end)
-    GuiButton.MouseButton1Click:Connect(function()
+    table.insert(Connections, GuiButton.MouseButton1Click:Connect(function()
         Button.Callback()
-    end)
-    GuiButton.MouseEnter:Connect(function()
+    end))
+
+    table.insert(Connections, GuiButton.MouseEnter:Connect(function()
         if ToolTip then
             Menu:SetToolTip(true, ToolTip, GuiButton)
         end
-    end)
-    GuiButton.MouseLeave:Connect(function()
+    end))
+
+    table.insert(Connections, GuiButton.MouseLeave:Connect(function()
         Menu:SetToolTip(false)
-    end)
+    end))
 
     Container:UpdateSize(25)
     table.insert(Items, Button)
@@ -841,20 +837,23 @@ function Menu.TextBox(Tab_Name: string, Container_Name: string, Name: string, Va
         GuiTextBox.BackgroundColor3 = Menu.ItemColor
         GuiTextBox.BorderColor3 = Menu.BorderColor
     end)
-    GuiTextBox.FocusLost:Connect(function()
+    
+    table.insert(Connections, GuiTextBox.FocusLost:Connect(function()
         TextBox.Value = GuiTextBox.Text
         TextBox.Callback(GuiTextBox.Text)
-    end)
-    GuiTextBox.MouseEnter:Connect(function()
+    end))
+
+    table.insert(Connections, GuiTextBox.MouseEnter:Connect(function()
         if ToolTip then
             Menu:SetToolTip(true, ToolTip, GuiTextBox)
         end
-    end)
-    GuiTextBox.MouseLeave:Connect(function()
+    end))
+
+    table.insert(Connections, GuiTextBox.MouseLeave:Connect(function()
         if ToolTip then
             Menu:SetToolTip(false)
         end
-    end)
+    end))
 
     Container:UpdateSize(45)
     table.insert(Items, TextBox)
@@ -903,16 +902,17 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
     end
 
 
-    Label.MouseEnter:Connect(function()
+    table.insert(Connections, Label.MouseEnter:Connect(function()
         if ToolTip then
             Menu:SetToolTip(true, ToolTip, Label)
         end
-    end)
-    Label.MouseLeave:Connect(function()
+    end))
+
+    table.insert(Connections, Label.MouseLeave:Connect(function()
         if ToolTip then
             Menu:SetToolTip(false)
         end
-    end)
+    end))
 
     Button.BackgroundColor3 = Menu.ItemColor
     Button.BorderColor3 = Color3.new()
@@ -923,10 +923,11 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
     AddEventListener(Button, function()
         Button.BackgroundColor3 = CheckBox.Value and Menu.Accent or Menu.ItemColor
     end)
-    Button.MouseButton1Click:Connect(function()
+    
+    table.insert(Connections, Button.MouseButton1Click:Connect(function()
         CheckBox:Update(not CheckBox.Value)
         CheckBox.Callback(CheckBox.Value)
-    end)
+    end))
 
     CheckBox:Update(CheckBox.Value)
     Container:UpdateSize(20)
@@ -984,16 +985,17 @@ function Menu.Hotkey(Tab_Name: string, Container_Name: string, Name: string, Key
     end
 
 
-    Label.MouseEnter:Connect(function()
+    table.insert(Connections, Label.MouseEnter:Connect(function()
         if ToolTip then
             Menu:SetToolTip(true, ToolTip, Label)
         end
-    end)
-    Label.MouseLeave:Connect(function()
+    end))
+
+    table.insert(Connections, Label.MouseLeave:Connect(function()
         if ToolTip then
             Menu:SetToolTip(false)
         end
-    end)
+    end))
 
     Button.Name = "Hotkey"
     Button.BackgroundTransparency = 1
@@ -1035,13 +1037,14 @@ function Menu.Hotkey(Tab_Name: string, Container_Name: string, Name: string, Key
             HotkeyToggle.TextColor3 = Menu.Accent
         end
     end)
-    HotkeyToggle.MouseButton1Click:Connect(function()
+    
+    table.insert(Connections, HotkeyToggle.MouseButton1Click:Connect(function()
         Hotkey:Update(Hotkey.Key, "Toggle")
         HotkeyToggle.TextColor3 = Menu.Accent
         HotkeyHold.TextColor3 = Color3.new(1, 1, 1)
         UpdateSelected()
         Hotkey.Callback(Hotkey.Key, Hotkey.Mode)
-    end)
+    end))
 
     HotkeyHold.Parent = Selected_Hotkey
     HotkeyHold.BackgroundColor3 = Menu.ItemColor
@@ -1059,27 +1062,29 @@ function Menu.Hotkey(Tab_Name: string, Container_Name: string, Name: string, Key
             HotkeyHold.TextColor3 = Menu.Accent
         end
     end)
-    HotkeyHold.MouseButton1Click:Connect(function()
+    
+    table.insert(Connections, HotkeyHold.MouseButton1Click:Connect(function()
         Hotkey:Update(Hotkey.Key, "Hold")
         HotkeyHold.TextColor3 = Menu.Accent
         HotkeyToggle.TextColor3 = Color3.new(1, 1, 1)
         UpdateSelected()
         Hotkey.Callback(Hotkey.Key, Hotkey.Mode)
-    end)
+    end))
 
-    Button.MouseButton1Click:Connect(function()
+    table.insert(Connections, Button.MouseButton1Click:Connect(function()
         Button.Text = "..."
         Hotkey.Editing = true
         if UserInput:IsKeyDown(HotkeyRemoveKey) and Key ~= HotkeyRemoveKey then
             Hotkey:Update()
             Hotkey.Callback(nil, Hotkey.Mode)
         end
-    end)
-    Button.MouseButton2Click:Connect(function()
-        UpdateSelected(Selected_Hotkey, Button, UDim2.fromOffset(100, 0))
-    end)
+    end))
 
-    UserInput.InputBegan:Connect(function(Input)
+    table.insert(Connections, Button.MouseButton2Click:Connect(function()
+        UpdateSelected(Selected_Hotkey, Button, UDim2.fromOffset(100, 0))
+    end))
+
+    table.insert(Connections, UserInput.InputBegan:Connect(function(Input)
         if Hotkey.Editing then
             local Key = Input.KeyCode
             if Key == Enum.KeyCode.Unknown then
@@ -1091,7 +1096,7 @@ function Menu.Hotkey(Tab_Name: string, Container_Name: string, Name: string, Key
                 Hotkey.Callback(Key, Hotkey.Mode)
             end
         end
-    end)
+    end))
 
     Container:UpdateSize(20)
     table.insert(Items, Hotkey)
@@ -1161,14 +1166,15 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
 
     Slider.self = Label
 
-    Label.MouseEnter:Connect(function()
+    table.insert(Connections, Label.MouseEnter:Connect(function()
         if ToolTip then
             Menu:SetToolTip(true, ToolTip, Label)
         end
-    end)
-    Label.MouseLeave:Connect(function()
+    end))
+
+    table.insert(Connections, Label.MouseLeave:Connect(function()
         Menu:SetToolTip(false)
-    end)
+    end))
 
     Button.Name = "Slider"
     Button.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
@@ -1200,12 +1206,12 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
     ValueBox.TextXAlignment = Enum.TextXAlignment.Right
     ValueBox.ClipsDescendants = true
     ValueBox.Parent = Label
-    ValueBox.FocusLost:Connect(function()
+    table.insert(Connections, ValueBox.FocusLost:Connect(function()
         Slider.Value = tonumber(ValueBox.Text) or 0
         local Percentage = (Slider.Value - Slider.Min) / (Slider.Max - Slider.Min)
         Slider:Update(Percentage)
         Slider.Callback(Slider.Value)
-    end)
+    end))
 
     ValueLabel.Name = "ValueLabel"
     ValueLabel.BackgroundTransparency = 1
@@ -1217,7 +1223,7 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
     ValueLabel.TextSize = 14
     ValueLabel.Parent = ValueBar
 
-    Button.InputBegan:Connect(function(Input: InputObject, Process: boolean)
+    table.insert(Connections, Button.InputBegan:Connect(function(Input: InputObject, Process: boolean)
         if (not Dragging.Gui and not Dragging.True) and (Input.UserInputType == Enum.UserInputType.MouseButton1) then
             Dragging = {Gui = Button, True = true}
             local InputPosition = Vector2.new(Input.Position.X, Input.Position.Y)
@@ -1225,9 +1231,9 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
             Slider:Update(Percentage.X)
             Slider.Callback(Slider.Value)
         end
-    end)
+    end))
 
-    UserInput.InputChanged:Connect(function(Input: InputObject, Process: boolean)
+    table.insert(Connections, UserInput.InputChanged:Connect(function(Input: InputObject, Process: boolean)
         if Dragging.Gui ~= Button then return end
         if not (UserInput:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)) then
             Dragging = {Gui = nil, True = false}
@@ -1239,7 +1245,7 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
             Slider:Update(Percentage.X)
             Slider.Callback(Slider.Value)
         end
-    end)
+    end))
 
 
     Slider:SetValue(Slider.Value)
@@ -1321,16 +1327,17 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
     end
 
 
-    Label.MouseEnter:Connect(function()
+    table.insert(Connections, Label.MouseEnter:Connect(function()
         if ToolTip then
             Menu:SetToolTip(true, ToolTip, Label)
         end
-    end)
-    Label.MouseLeave:Connect(function()
+    end))
+
+    table.insert(Connections, Label.MouseLeave:Connect(function()
         if ToolTip then
             Menu:SetToolTip(false)
         end
-    end)
+    end))
 
     Button.Name = "ColorPicker"
     Button.BackgroundColor3 = ColorPicker.Color
@@ -1342,9 +1349,9 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
     Button.TextColor3 = Color3.new(1, 1, 1)
     Button.TextSize = 12
     Button.Parent = Label
-    Button.MouseButton1Click:Connect(function()
+    table.insert(Connections, Button.MouseButton1Click:Connect(function()
         UpdateSelected(Selected_ColorPicker, Button, UDim2.fromOffset(20, 20))
-    end)
+    end))
 
     Selected_ColorPicker.Name = "Selected_ColorPicker"
     Selected_ColorPicker.Visible = false
@@ -1374,7 +1381,7 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
     HexBox.ClipsDescendants = true
     HexBox.Parent = Selected_ColorPicker
     CreateStroke(HexBox, Color3.new(), 1)
-    HexBox.FocusLost:Connect(function()
+    table.insert(Connections, HexBox.FocusLost:Connect(function()
         pcall(function()
             local Color, Alpha = string.sub(HexBox.Text, 1, 7), string.sub(HexBox.Text, 8, #HexBox.Text)
             ColorPicker.Color = Color3.fromHex(Color)
@@ -1382,7 +1389,8 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
             ColorPicker.Hue, ColorPicker.Saturation[1], ColorPicker.Saturation[2] = ColorPicker.Color:ToHSV()
             ColorPicker:Update()
         end)
-    end)
+    end))
+
     AddEventListener(HexBox, function()
         HexBox.BackgroundColor3 = Menu.ItemColor
         HexBox.BorderColor3 = Menu.BorderColor
@@ -1473,34 +1481,34 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
         ColorPicker:Update()
     end
 
-    Saturation.InputBegan:Connect(function(Input: InputObject, Process: boolean)
+    table.insert(Connections, Saturation.InputBegan:Connect(function(Input: InputObject, Process: boolean)
         if (not Dragging.Gui and not Dragging.True) and (Input.UserInputType == Enum.UserInputType.MouseButton1) then
             Dragging = {Gui = Saturation, True = true}
             local InputPosition = Vector2.new(Input.Position.X, Input.Position.Y)
             local Percentage = (InputPosition - Saturation.AbsolutePosition) / Saturation.AbsoluteSize
             UpdateSaturation(Percentage.X, Percentage.Y)
         end
-    end)
+    end))
 
-    Alpha.InputBegan:Connect(function(Input: InputObject, Process: boolean)
+    table.insert(Connections, Alpha.InputBegan:Connect(function(Input: InputObject, Process: boolean)
         if (not Dragging.Gui and not Dragging.True) and (Input.UserInputType == Enum.UserInputType.MouseButton1) then
             Dragging = {Gui = Alpha, True = true}
             local InputPosition = Vector2.new(Input.Position.X, Input.Position.Y)
             local Percentage = (InputPosition - Alpha.AbsolutePosition) / Alpha.AbsoluteSize
             UpdateAlpha(Percentage.Y)
         end
-    end)
+    end))
 
-    Hue.InputBegan:Connect(function(Input: InputObject, Process: boolean)
+    table.insert(Connections, Hue.InputBegan:Connect(function(Input: InputObject, Process: boolean)
         if (not Dragging.Gui and not Dragging.True) and (Input.UserInputType == Enum.UserInputType.MouseButton1) then
             Dragging = {Gui = Hue, True = true}
             local InputPosition = Vector2.new(Input.Position.X, Input.Position.Y)
             local Percentage = (InputPosition - Hue.AbsolutePosition) / Hue.AbsoluteSize
             UpdateHue(Percentage.Y)
         end
-    end)
+    end))
 
-    UserInput.InputChanged:Connect(function(Input: InputObject, Process: boolean)
+    table.insert(Connections, UserInput.InputChanged:Connect(function(Input: InputObject, Process: boolean)
         if (Dragging.Gui ~= Saturation and Dragging.Gui ~= Alpha and Dragging.Gui ~= Hue) then return end
         if not (UserInput:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)) then
             Dragging = {Gui = nil, True = false}
@@ -1522,8 +1530,7 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
                 UpdateHue(Percentage.Y)
             end
         end
-    end)
-    
+    end))
     
     ColorPicker.Hue, ColorPicker.Saturation[1], ColorPicker.Saturation[2] = ColorPicker.Color:ToHSV()
     ColorPicker:Update()
@@ -1569,7 +1576,7 @@ function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, V
         Button.TextSize = 14
         Button.TextTruncate = Enum.TextTruncate.AtEnd
         Button.Parent = List
-        Button.MouseButton1Click:Connect(function()
+        table.insert(Connections, Button.MouseButton1Click:Connect(function()
             for _, v in ipairs(List:GetChildren()) do
                 if v:IsA("GuiButton") then
                     if v == Button then continue end
@@ -1580,7 +1587,8 @@ function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, V
             UpdateValue(Button.Text)
             UpdateSelected()
             ComboBox.Callback(ComboBox.Value)
-        end)
+        end))
+
         AddEventListener(Button, function()
             Button.BackgroundColor3 = Menu.ItemColor
             if ComboBox.Value == Button.Text then
@@ -1641,16 +1649,17 @@ function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, V
     end
 
 
-    Label.MouseEnter:Connect(function()
+    table.insert(Connections, Label.MouseEnter:Connect(function()
         if ToolTip then
             Menu:SetToolTip(true, ToolTip, Label)
         end
-    end)
-    Label.MouseLeave:Connect(function()
+    end))
+
+    table.insert(Connections, Label.MouseLeave:Connect(function()
         if ToolTip then
             Menu:SetToolTip(false)
         end
-    end)
+    end))
 
     Button.Name = "Button"
     Button.BackgroundColor3 = Menu.ItemColor
@@ -1663,10 +1672,11 @@ function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, V
     Button.TextSize = 14
     Button.TextTruncate = Enum.TextTruncate.AtEnd
     Button.Parent = Label
-    Button.MouseButton1Click:Connect(function()
+    table.insert(Connections, Button.MouseButton1Click:Connect(function()
         UpdateSelected(List, Button, UDim2.fromOffset(0, 15))
         List.Size = UDim2.fromOffset(Button.AbsoluteSize.X, math.clamp(#ComboBox.Items * 15, 15, 90))
-    end)
+    end))
+
     AddEventListener(Button, function()
         Button.BackgroundColor3 = Menu.ItemColor
     end)
@@ -1753,12 +1763,13 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
         Button.TextSize = 14
         Button.Parent = List
         Button.TextTruncate = Enum.TextTruncate.AtEnd
-        Button.MouseButton1Click:Connect(function()
+        table.insert(Connections, Button.MouseButton1Click:Connect(function()
             MultiSelect.Items[Name] = not MultiSelect.Items[Name]
             Button.TextColor3 = MultiSelect.Items[Name] and Menu.Accent or Color3.new(1, 1, 1)
             UpdateValue()
             MultiSelect.Callback(MultiSelect.Items) -- don't send value
-        end)
+        end))
+
         AddEventListener(Button, function()
             Button.BackgroundColor3 = Menu.ItemColor
             Button.TextColor3 = table.find(GetSelectedItems(), Button.Text) and Menu.Accent or Color3.new(1, 1, 1)
@@ -1767,6 +1778,7 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
         if GetDictionaryLength(MultiSelect.Items) >= 6 then
             List.CanvasSize += UDim2.fromOffset(0, 15)
         end
+
         table.insert(ItemObjects, Button)
     end
 
@@ -1816,16 +1828,17 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
     end
 
 
-    Label.MouseEnter:Connect(function()
+    table.insert(Connections, Label.MouseEnter:Connect(function()
         if ToolTip then
             Menu:SetToolTip(true, ToolTip, Label)
         end
-    end)
-    Label.MouseLeave:Connect(function()
+    end))
+
+    table.insert(Connections, Label.MouseLeave:Connect(function()
         if ToolTip then
             Menu:SetToolTip(false)
         end
-    end)
+    end))
 
     Button.BackgroundColor3 = Menu.ItemColor
     Button.BorderColor3 = Color3.new()
@@ -1837,10 +1850,11 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
     Button.TextSize = 14
     Button.TextTruncate = Enum.TextTruncate.AtEnd
     Button.Parent = Label
-    Button.MouseButton1Click:Connect(function()
+    table.insert(Connections, Button.MouseButton1Click:Connect(function()
         UpdateSelected(List, Button, UDim2.fromOffset(0, 15))
         List.Size = UDim2.fromOffset(Button.AbsoluteSize.X, math.clamp(GetDictionaryLength(MultiSelect.Items) * 15, 15, 90))
-    end)
+    end))
+
     AddEventListener(Button, function()
         Button.BackgroundColor3 = Menu.ItemColor
     end)
@@ -1929,7 +1943,7 @@ function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Mu
         Button.Parent = List
         if ListBox.Method == "Default" then
             Button.TextColor3 = ListBox.Value == Button.Text and Menu.Accent or Color3.new(1, 1, 1)
-            Button.MouseButton1Click:Connect(function()
+            table.insert(Connections, Button.MouseButton1Click:Connect(function()
                 for _, v in ipairs(List:GetChildren()) do
                     if v:IsA("GuiButton") then
                         if v == Button then continue end
@@ -1940,7 +1954,8 @@ function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Mu
                 UpdateValue(Button.Text)
                 UpdateSelected()
                 ListBox.Callback(ListBox.Value)
-            end)
+            end))
+            
             AddEventListener(Button, function()
                 Button.BackgroundColor3 = Menu.ItemColor
                 if ListBox.Value == Button.Text then
@@ -1955,13 +1970,14 @@ function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Mu
             end
         else
             Button.TextColor3 = Checked and Menu.Accent or Color3.new(1, 1, 1)
-            Button.MouseButton1Click:Connect(function()
+            table.insert(Connections, Button.MouseButton1Click:Connect(function()
                 ListBox.Items[Name] = not ListBox.Items[Name]
                 Button.TextColor3 = ListBox.Items[Name] and Menu.Accent or Color3.new(1, 1, 1)
                 UpdateValue()
                 UpdateSelected()
                 ListBox.Callback(ListBox.Value)
-            end)
+            end))
+
             AddEventListener(Button, function()
                 Button.BackgroundColor3 = Menu.ItemColor
                 if table.find(ListBox.Value, Name) then
@@ -1975,6 +1991,7 @@ function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Mu
                 List.CanvasSize += UDim2.fromOffset(0, 15)
             end
         end
+
         table.insert(ItemObjects, Button)
     end
 
@@ -2053,16 +2070,18 @@ function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Mu
     List.ScrollBarThickness = 4
     List.ScrollBarImageColor3 = Menu.Accent
     List.Parent = Container.self
-    List.MouseEnter:Connect(function()
+    table.insert(Connections, List.MouseEnter:Connect(function()
         if ToolTip then
             Menu:SetToolTip(true, ToolTip, List)
         end
-    end)
-    List.MouseLeave:Connect(function()
+    end))
+
+    table.insert(Connections, List.MouseLeave:Connect(function()
         if ToolTip then
             Menu:SetToolTip(false)
         end
-    end)
+    end))
+
     CreateStroke(List, Color3.new(), 1)
     AddEventListener(List, function()
         List.BackgroundColor3 = Menu.ItemColor
@@ -2140,16 +2159,16 @@ function Menu.Notify(Content: string, Delay: number)
     TweenIn:Play()
     CustomTweenOffset(100)
     
-    TweenIn.Completed:Connect(function()
+    table.insert(Connections, TweenIn.Completed:Connect(function()
         delay(Delay, function()
             TweenOut:Play()
             CustomTweenOffset(100)
 
-            TweenOut.Completed:Connect(function()
+            table.insert(Connections, TweenOut.Completed:Connect(function()
                 Notification:Destroy()
-            end)
+            end))
         end)
-    end)
+    end))
 end
 
 
@@ -2179,7 +2198,7 @@ function Menu.Prompt(Message: string, Callback: any, ...)
         Button.Font = Enum.Font.SourceSans
         Button.TextColor3 = Color3.new(1, 1, 1)
         Button.Parent = Prompt
-        Button.MouseButton1Click:Connect(function() Prompt:Destroy() Callback(unpack(Arguments)) end)
+        table.insert(Connections, Button.MouseButton1Click:Connect(function() Prompt:Destroy() Callback(unpack(Arguments)) end))
         CreateStroke(Button, Color3.new(), 1)
         Height += 25
     end
@@ -2604,10 +2623,8 @@ function Menu.Indicators(): Indicators
         self.self.Position = Position
     end
 
-
     return Indicators
 end
-
 
 function Menu.Watermark(): Watermark
     local Watermark = {}
@@ -2649,15 +2666,15 @@ function Menu.Watermark(): Watermark
     return Watermark
 end
 
-
 function Menu:Init()
-    UserInput.InputBegan:Connect(function(Input: InputObject, Process: boolean) end)
-    UserInput.InputEnded:Connect(function(Input: InputObject)
+    table.insert(Connections, UserInput.InputBegan:Connect(function(Input: InputObject, Process: boolean) end))
+    table.insert(Connections, UserInput.InputEnded:Connect(function(Input: InputObject)
         if (Input.UserInputType == Enum.UserInputType.MouseButton1) then
             Dragging = {Gui = nil, True = false}
         end
-    end)
-    RunService.RenderStepped:Connect(function(Step: number)
+    end))
+
+    table.insert(Connections, RunService.RenderStepped:Connect(function(Step: number)
         local Menu_Frame = Menu.Screen.Menu
         Menu_Frame.Position = UDim2.fromOffset(
             math.clamp(Menu_Frame.AbsolutePosition.X,   0, math.clamp(Menu.ScreenSize.X - Menu_Frame.AbsoluteSize.X, 0, Menu.ScreenSize.X    )),
@@ -2696,10 +2713,21 @@ function Menu:Init()
             ToolTip_Label.Text = ToolTip.Content
             ToolTip_Label.Position = UDim2.fromOffset(ToolTip.Item.AbsolutePosition.X, ToolTip.Item.AbsolutePosition.Y + 25)
         end
-    end)
-    Menu.Screen:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+    end))
+
+    table.insert(Connections, Menu.Screen:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
         Menu.ScreenSize = Menu.Screen.AbsoluteSize
-    end)
+    end))
+end
+
+function Menu:Unload()
+    for _, Connection in Connections do
+        if Connection.Connected then
+            Connection:Disconnect()
+        end
+    end
+
+    Menu.Screen:Destroy()
 end
 
 return Menu
