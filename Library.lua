@@ -5,9 +5,8 @@
 -- // I think something was wrong with the keybinds/indicators tweening
 -- // Menu Effects (OnHover, OnClick)
 
-
 local Settings = {
-    Accent = Color3.fromHex("#8F30A7"),
+    Accent = Color3.fromHex("#03B7FF"),
     Font = Enum.Font.SourceSans,
     IsBackgroundTransparent = true,
     Rounded = false,
@@ -19,11 +18,11 @@ local Settings = {
     MaxSize = Vector2.new(550, 600)
 }
 
-
 local Menu = {}
 local Tabs = {}
 local Items = {}
-local EventObjects = {} -- For updating items on menu property change
+local EventObjects = {}
+local Threads = {}
 local Connections = {}
 local Notifications = {}
 
@@ -74,7 +73,6 @@ setmetatable(Menu, {
         for _, Notification in pairs(Notifications) do Notification:Update() end
     end
 })
-
 
 Menu.Accent = Settings.Accent
 Menu.Font = Settings.Font
@@ -347,13 +345,11 @@ Modal.Modal = true
 Modal.Text = ""
 Modal.Parent = Menu_Frame
 
-
 --SelectedTabLines.Top = CreateLine(nil, UDim2.new(1, 0, 0, 1), UDim2.new())
 SelectedTabLines.Left = CreateLine(nil, UDim2.new(0, 1, 1, 0), UDim2.new(), Color3.new())
 SelectedTabLines.Right = CreateLine(nil, UDim2.new(0, 1, 1, 0), UDim2.new(1, -1, 0, 0), Color3.new())
 SelectedTabLines.Bottom = CreateLine(TabIndex_Frame, UDim2.new(), UDim2.new(0, 0, 1, 0), Color3.new())
 SelectedTabLines.Bottom2 = CreateLine(TabIndex_Frame, UDim2.new(), UDim2.new(), Color3.new())
-
 
 local function GetDictionaryLength(Dictionary: table)
     local Length = 0
@@ -362,7 +358,6 @@ local function GetDictionaryLength(Dictionary: table)
     end
     return Length
 end
-
 
 local function UpdateSelectedTabLines(Tab: Tab)
     if not Tab then return end
@@ -394,7 +389,6 @@ local function UpdateSelectedTabLines(Tab: Tab)
     SelectedTabLines.Bottom2.Position = UDim2.new(0, OFFSET, 1, 0)
 end
 
-
 local function UpdateTabs()
     for _, Tab in pairs(Tabs) do
         Tab.Button.Size = UDim2.new(1 / GetDictionaryLength(Tabs), 0, 1, 0)
@@ -402,7 +396,6 @@ local function UpdateTabs()
     end
     UpdateSelectedTabLines(SelectedTab)
 end
-
 
 local function GetTab(Tab_Name: string): Tab
     assert(Tab_Name, "NO TAB_NAME GIVEN")
@@ -426,25 +419,21 @@ local function ChangeTab(Tab_Name: string)
     UpdateSelectedTabLines(Tab)
 end
 
-
 local function GetContainer(Tab_Name: string, Container_Name: string): Container
     assert(Tab_Name, "NO TAB_NAME GIVEN")
     assert(Container_Name, "NO CONTAINER NAME GIVEN")
     return GetTab(Tab_Name)[Container_Name]
 end
 
-
 local function CheckItemIndex(Item_Index: number, Method: string)
     assert(typeof(Item_Index) == "number", "invalid argument #1 to '" .. Method .. "' (number expected, got " .. typeof(Item_Index) .. ")")
     assert(Item_Index <= #Items and Item_Index > 0, "invalid argument #1 to '" .. Method .. "' (index out of range")
 end
 
-
 function Menu:GetItem(Index: number): Item
     CheckItemIndex(Index, "GetItem")
     return Items[Index]
 end
-
 
 function Menu:FindItem(Tab_Name: string, Container_Name: string, Class_Name: string, Name: string): Item
     local Result
@@ -464,11 +453,9 @@ function Menu:FindItem(Tab_Name: string, Container_Name: string, Class_Name: str
     end
 end
 
-
 function Menu:SetTitle(Name: string)
     Title_Label.Text = tostring(Name)
 end
-
 
 function Menu:SetIcon(Icon: string)
     if typeof(Icon) == "string" or typeof(Icon) == "number" then
@@ -483,7 +470,6 @@ function Menu:SetIcon(Icon: string)
         Icon_Image.Visible = false
     end
 end
-
 
 function Menu:SetSize(Size: Vector2)
     local Size = typeof(Size) == "Vector2" and Size or typeof(Size) == "UDim2" and Vector2.new(Size.X, Size.Y) or Menu.MinSize
@@ -501,7 +487,6 @@ function Menu:SetSize(Size: Vector2)
     UpdateTabs()
 end
 
-
 function Menu:SetVisible(Visible: boolean)
     local IsVisible = typeof(Visible) == "boolean" and Visible
     Menu_Frame.Visible = IsVisible
@@ -511,13 +496,10 @@ function Menu:SetVisible(Visible: boolean)
     end
 end
 
-
 function Menu:SetTab(Tab_Name: string)
     ChangeTab(Tab_Name)
 end
 
-
--- this function should be private
 function Menu:SetToolTip(Enabled: boolean, Content: string, Item: Instance)
     ToolTip = {
         Enabled = Enabled,
@@ -527,7 +509,6 @@ function Menu:SetToolTip(Enabled: boolean, Content: string, Item: Instance)
 
     ToolTip_Label.Visible = Enabled
 end
-
 
 function Menu.Line(Parent: Instance, Size: UDim2, Position: UDim2): Line
     local Line = {self = CreateLine(Parent, Size, Position)}
@@ -545,7 +526,6 @@ function Menu.Tab(Tab_Name: string): Tab
     local Tab = {self = Frame, Button = Button}
     Tab.Class = "Tab"
     Tab.Index = GetDictionaryLength(Tabs) + 1
-
 
     local function CreateSide(Side: string)
         local Frame = Instance.new("ScrollingFrame")
@@ -571,7 +551,6 @@ function Menu.Tab(Tab_Name: string): Tab
         ListLayout.Padding = UDim.new(0, 10)
         ListLayout.Parent = Frame
     end
-
 
     Button.Name = "Button"
     Button.BackgroundColor3 = Menu.ItemColor
@@ -663,7 +642,6 @@ function Menu.Container(Tab_Name: string, Container_Name: string, Side: string):
         return self.Height
     end
 
-
     Frame.Name = "Container"
     Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     Frame.BorderColor3 = Color3.new()
@@ -676,7 +654,6 @@ function Menu.Container(Tab_Name: string, Container_Name: string, Side: string):
     Tab[Container_Name] = Container
     return Container
 end
-
 
 function Menu.Label(Tab_Name: string, Container_Name: string, Name: string, ToolTip: string): Label
     local Container = GetContainer(Tab_Name, Container_Name)
@@ -718,7 +695,6 @@ function Menu.Label(Tab_Name: string, Container_Name: string, Name: string, Tool
     return #Items
 end
 
-
 function Menu.Button(Tab_Name: string, Container_Name: string, Name: string, Callback: any, ToolTip: string): Button
     local Container = GetContainer(Tab_Name, Container_Name)
     local GuiButton = Instance.new("TextButton")
@@ -731,7 +707,6 @@ function Menu.Button(Tab_Name: string, Container_Name: string, Name: string, Cal
     Button.Index = #Items + 1
     Button.Callback = typeof(Callback) == "function" and Callback or function() end
 
-    
     function Button:SetLabel(Name: string)
         GuiButton.Text = tostring(Name)
     end
@@ -743,7 +718,6 @@ function Menu.Button(Tab_Name: string, Container_Name: string, Name: string, Cal
         GuiButton.Visible = Visible
         Container:UpdateSize(Visible and 25 or -25, GuiButton)
     end
-
 
     GuiButton.Name = "Button"
     GuiButton.BackgroundColor3 = Menu.ItemColor
@@ -781,7 +755,6 @@ function Menu.Button(Tab_Name: string, Container_Name: string, Name: string, Cal
     return #Items
 end
 
-
 function Menu.TextBox(Tab_Name: string, Container_Name: string, Name: string, Value: string, Callback: any, ToolTip: string): TextBox
     local Container = GetContainer(Tab_Name, Container_Name)
     local Label = CreateLabel(Container.self, "TextBox", Name, nil, UDim2.fromOffset(20, Container:GetHeight()))
@@ -795,7 +768,6 @@ function Menu.TextBox(Tab_Name: string, Container_Name: string, Name: string, Va
     TextBox.Index = #Items + 1
     TextBox.Value = typeof(Value) == "string" and Value or ""
     TextBox.Callback = typeof(Callback) == "function" and Callback or function() end
-
 
     function TextBox:SetLabel(Name: string)
         Label.Text = tostring(Name)
@@ -817,7 +789,6 @@ function Menu.TextBox(Tab_Name: string, Container_Name: string, Name: string, Va
         self.Value = tostring(Value)
         GuiTextBox.Text = self.Value
     end
-
 
     GuiTextBox.Name = "TextBox"
     GuiTextBox.BackgroundColor3 = Menu.ItemColor
@@ -860,12 +831,11 @@ function Menu.TextBox(Tab_Name: string, Container_Name: string, Name: string, Va
     return #Items
 end
 
-
-function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, Boolean: boolean, Callback: any, ToolTip: string): CheckBox
+function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, Boolean: boolean, Keybind: boolean, Callback: any, ToolTip: string): CheckBox
     local Container = GetContainer(Tab_Name, Container_Name)
     local Label = CreateLabel(Container.self, "CheckBox", Name, nil, UDim2.fromOffset(20, Container:GetHeight()))
     local Button = Instance.new("TextButton")
-    
+	
     local CheckBox = {self = Label}
     CheckBox.Name = Name
     CheckBox.Class = "CheckBox"
@@ -875,10 +845,17 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
     CheckBox.Value = typeof(Boolean) == "boolean" and Boolean or false
     CheckBox.Callback = typeof(Callback) == "function" and Callback or function() end
 
+	local KeybindObject = nil
+	local SelectedKey = nil
+	local Editing = false
 
     function CheckBox:Update(Value: boolean)
         self.Value = typeof(Value) == "boolean" and Value
         Button.BackgroundColor3 = self.Value and Menu.Accent or Menu.ItemColor
+
+		if KeybindObject and SelectedKey ~= nil then
+			KeybindObject:Update(Value)
+		end
     end
 
     function CheckBox:SetLabel(Name: string)
@@ -900,7 +877,6 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
     function CheckBox:SetValue(Value: boolean)
         self:Update(Value)
     end
-
 
     table.insert(Connections, Label.MouseEnter:Connect(function()
         if ToolTip then
@@ -929,12 +905,58 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
         CheckBox.Callback(CheckBox.Value)
     end))
 
+    if Keybind then
+        local HotkeyButton = Instance.new("TextButton")
+        HotkeyButton.Name = "Keybind"
+        HotkeyButton.BackgroundTransparency = 1
+        HotkeyButton.Position = UDim2.new(1, -100, 0, 4)
+        HotkeyButton.Size = UDim2.fromOffset(75, 8)
+        HotkeyButton.Font = Enum.Font.SourceSans
+        HotkeyButton.Text = "[None]"
+        HotkeyButton.TextColor3 = Color3.new(1, 1, 1)
+        HotkeyButton.TextSize = 12
+        HotkeyButton.TextXAlignment = Enum.TextXAlignment.Right
+        HotkeyButton.Parent = Label
+
+        table.insert(Connections, HotkeyButton.MouseButton1Click:Connect(function()
+            HotkeyButton.Text = "..."
+            Editing = true
+        end))
+
+        table.insert(Connections, UserInput.InputBegan:Connect(function(Input)
+            if Editing then
+                local Key = Input.KeyCode
+                if Key ~= Enum.KeyCode.Unknown and Key ~= HotkeyRemoveKey then
+                    SelectedKey = Key
+                    HotkeyButton.Text = "[" .. Key.Name .. "]"
+                    Editing = false
+
+					KeybindObject:Update(Key.Name)
+					KeybindObject:Update(CheckBox.Value)
+				elseif Key == HotkeyRemoveKey then
+					SelectedKey = nil
+					HotkeyButton.Text = "[None]"
+					Editing = false
+
+					KeybindObject:Update("None")
+					KeybindObject:Update(false)
+                end
+            elseif SelectedKey and Input.KeyCode == SelectedKey then
+                CheckBox:SetValue(not CheckBox.Value)
+                CheckBox.Callback(CheckBox.Value)
+            end
+        end))
+		
+		table.insert(Threads, task.delay(0.5, function()
+			KeybindObject = Menu.CurrentKeybinds.Add(Name, "None")
+		end))
+    end
+
     CheckBox:Update(CheckBox.Value)
     Container:UpdateSize(20)
     table.insert(Items, CheckBox)
     return #Items
 end
-
 
 function Menu.Hotkey(Tab_Name: string, Container_Name: string, Name: string, Key:EnumItem, Callback: any, ToolTip: string): Hotkey
     local Container = GetContainer(Tab_Name, Container_Name)
@@ -954,7 +976,6 @@ function Menu.Hotkey(Tab_Name: string, Container_Name: string, Name: string, Key
     Hotkey.Callback = typeof(Callback) == "function" and Callback or function() end
     Hotkey.Editing = false
     Hotkey.Mode = "Toggle"
-
 
     function Hotkey:Update(Input: EnumItem, Mode: string)
         Button.Text = Input and string.format("[%s]", Input.Name) or "[None]"
@@ -983,7 +1004,6 @@ function Menu.Hotkey(Tab_Name: string, Container_Name: string, Name: string, Key
     function Hotkey:SetValue(Key: EnumItem, Mode: string)
         self:Update(Key, Mode)
     end
-
 
     table.insert(Connections, Label.MouseEnter:Connect(function()
         if ToolTip then
@@ -1103,7 +1123,6 @@ function Menu.Hotkey(Tab_Name: string, Container_Name: string, Name: string, Key
     return #Items
 end
 
-
 function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min: number, Max: number, Value: number, Unit: string, Scale: number, Callback: any, ToolTip: string): Slider
     local Container = GetContainer(Tab_Name, Container_Name)
     local Label = CreateLabel(Container.self, "Slider", Name, UDim2.new(1, -10, 0, 15), UDim2.fromOffset(20, Container:GetHeight()))
@@ -1125,7 +1144,6 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
     Slider.Scale = typeof(Scale) == "number" and Scale or 0
     Slider.Callback = typeof(Callback) == "function" and Callback or function() end
 
-
     local function UpdateSlider(Percentage: number)
         local Percentage = typeof(Percentage == "number") and math.clamp(Percentage, 0, 1) or 0
         local Value = Slider.Min + ((Slider.Max - Slider.Min) * Percentage)
@@ -1136,7 +1154,6 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
         ValueBox.Text = "[" .. Slider.Value .. "]"
         ValueLabel.Text = Slider.Value .. Slider.Unit
     end
-
 
     function Slider:Update(Percentage: number)
         UpdateSlider(Percentage)
@@ -1254,7 +1271,6 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
     return #Items
 end
 
-
 function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string, Color: Color3, Alpha: number, Callback: any, ToolTip: string): ColorPicker
     local Container = GetContainer(Tab_Name, Container_Name)
     local Label = CreateLabel(Container.self, "ColorPicker", Name, UDim2.new(1, -10, 0, 15), UDim2.fromOffset(20, Container:GetHeight()))
@@ -1283,7 +1299,6 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
     ColorPicker.Hue = 0
     ColorPicker.Callback = typeof(Callback) == "function" and Callback or function() end
 
-
     local function UpdateColor()
         ColorPicker.Color = Color3.fromHSV(ColorPicker.Hue, ColorPicker.Saturation[1], ColorPicker.Saturation[2])
 
@@ -1298,7 +1313,6 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
 
         ColorPicker.Callback(ColorPicker.Color, ColorPicker.Alpha)
     end
-
 
     function ColorPicker:Update()
         UpdateColor()
@@ -1325,7 +1339,6 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
     function ColorPicker:GetValue(): Color3--, number
         return self.Color, self.Alpha
     end
-
 
     table.insert(Connections, Label.MouseEnter:Connect(function()
         if ToolTip then
@@ -1539,7 +1552,6 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
     return #Items
 end
 
-
 function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, Value: string, Value_Items: table, Callback: any, ToolTip: string): ComboBox
     local Container = GetContainer(Tab_Name, Container_Name)
     local Label = CreateLabel(Container.self, "ComboBox", Name, UDim2.new(1, -10, 0, 15), UDim2.fromOffset(20, Container:GetHeight()))
@@ -1604,7 +1616,6 @@ function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, V
         table.insert(ItemObjects, Button)
     end
 
-
     function ComboBox:Update(Value: string, Items: any)
         UpdateValue(Value)
         if typeof(Items) == "table" then
@@ -1647,7 +1658,6 @@ function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, V
         end
         self:Update(Value, self.Items)
     end
-
 
     table.insert(Connections, Label.MouseEnter:Connect(function()
         if ToolTip then
@@ -1717,7 +1727,6 @@ function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, V
     return #Items
 end
 
-
 function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string, Value_Items: table, Callback: any, ToolTip: string): MultiSelect
     local Container = GetContainer(Tab_Name, Container_Name)
     local Label = CreateLabel(Container.self, "MultiSelect", Name, UDim2.new(1, -10, 0, 15), UDim2.fromOffset(20, Container:GetHeight()))
@@ -1736,12 +1745,13 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
     MultiSelect.Items = typeof(Value_Items) == "table" and Value_Items or {}
     MultiSelect.Value = {}
 
-
     local function GetSelectedItems(): table
         local Selected = {}
-        for k, v in pairs(MultiSelect.Items) do
+
+        for k, v in next, MultiSelect.Items do
             if v == true then table.insert(Selected, k) end
         end
+
         return Selected
     end
 
@@ -1781,7 +1791,6 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
 
         table.insert(ItemObjects, Button)
     end
-
 
     function MultiSelect:Update(Value: any)
         if typeof(Value) == "table" then
@@ -1826,7 +1835,6 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
     function MultiSelect:SetValue(Value: any)
         self:Update(Value)
     end
-
 
     table.insert(Connections, Label.MouseEnter:Connect(function()
         if ToolTip then
@@ -1893,7 +1901,6 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
     table.insert(Items, MultiSelect)
     return #Items
 end
-
 
 function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Multi: boolean, Value_Items: table, Callback: any, ToolTip: string): ListBox
     local Container = GetContainer(Tab_Name, Container_Name)
@@ -1995,7 +2002,6 @@ function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Mu
         table.insert(ItemObjects, Button)
     end
 
-
     function ListBox:Update(Value: string, Items: any)
         if self.Method == "Default" then
             UpdateValue(Value)
@@ -2059,7 +2065,6 @@ function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Mu
         return self.Value
     end
 
-
     List.Name = "List"
     List.Active = true
     List.BackgroundColor3 = Menu.ItemColor
@@ -2099,7 +2104,6 @@ function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Mu
     table.insert(Items, ListBox)
     return #Items
 end
-
 
 function Menu.Notify(Content: string, Delay: number)
     assert(typeof(Content) == "string", "missing argument #1, (string expected got " .. typeof(Content) .. ")")
@@ -2171,7 +2175,6 @@ function Menu.Notify(Content: string, Delay: number)
     end))
 end
 
-
 function Menu.Prompt(Message: string, Callback: any, ...)
     do
         local Prompt = Menu.Screen:FindFirstChild("Prompt")
@@ -2206,7 +2209,6 @@ function Menu.Prompt(Message: string, Callback: any, ...)
     CreateButton("OK", Callback, ...)
     CreateButton("Cancel", function() Prompt:Destroy() end)
 
-
     Title.Name = "Title"
     Title.BackgroundTransparency = 1
     Title.Size = UDim2.new(1, 0, 0, 15)
@@ -2226,7 +2228,6 @@ function Menu.Prompt(Message: string, Callback: any, ...)
     Prompt.Parent = Menu.Screen
 end
 
-
 function Menu.Spectators(): Spectators
     local Frame = Instance.new("Frame")
     local Title = Instance.new("TextLabel")
@@ -2235,7 +2236,6 @@ function Menu.Spectators(): Spectators
     local Spectators = {self = Frame}
     Spectators.List = {}
     Menu.Spectators = Spectators
-
 
     Frame.Name = "Spectators"
     Frame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
@@ -2270,13 +2270,11 @@ function Menu.Spectators(): Spectators
     ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     ListLayout.Parent = List
 
-
     local function UpdateFrameSize()
         local Height = ListLayout.AbsoluteContentSize.Y + 5
         Spectators.self:TweenSize(UDim2.fromOffset(250, math.clamp(Height + 50, 50, 5000)), nil, nil, 0.3, true)
         Spectators.self.List:TweenSize(UDim2.fromOffset(240, math.clamp(Height, 10, 5000)), nil, nil, 0.3, true)
     end
-
 
     function Spectators.Add(Name: string, Icon: string)
         Spectators.Remove(Name)
@@ -2313,7 +2311,6 @@ function Menu.Spectators(): Spectators
         UpdateFrameSize()
     end
 
-
     function Spectators.Remove(Name: string)
         if Spectators.List[Name] then
             Spectators.List[Name].self:Destroy()
@@ -2322,15 +2319,12 @@ function Menu.Spectators(): Spectators
         UpdateFrameSize()
     end
 
-
     function Spectators:SetVisible(Visible: boolean)
         self.self.Visible = Visible
     end
 
-
     return Spectators
 end
-
 
 function Menu.Keybinds(): Keybinds
     local Frame = Instance.new("Frame")
@@ -2340,7 +2334,6 @@ function Menu.Keybinds(): Keybinds
     local Keybinds = {self = Frame}
     Keybinds.List = {}
     Menu.Keybinds = Keybinds
-
 
     Frame.Name = "Keybinds"
     Frame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
@@ -2359,7 +2352,7 @@ function Menu.Keybinds(): Keybinds
     Title.Position = UDim2.new(0, 5, 0, 5)
     Title.Size = UDim2.new(0, 240, 0, 15)
     Title.Font = Enum.Font.SourceSansSemibold
-    Title.Text = "Key binds"
+    Title.Text = "Keybinds"
     Title.TextColor3 = Color3.new(1, 1, 1)
     Title.TextSize = 14
     Title.Parent = Frame
@@ -2418,9 +2411,13 @@ function Menu.Keybinds(): Keybinds
         StateLabel.TextXAlignment = Enum.TextXAlignment.Right
         StateLabel.Parent = Object
 
-        
-        function Keybind:Update(State: string)
-            StateLabel.Text = "[" .. tostring(State) .. "]"
+        function Keybind:Update(State: any)
+			if type(State) == "boolean" then
+				NameLabel.TextColor3 = State and Menu.Accent or Color3.new(1, 1, 1)
+				StateLabel.TextColor3 = State and Menu.Accent or Color3.new(1, 1, 1)
+			elseif type(State) == "string" then
+				StateLabel.Text = "[" .. tostring(State) .. "]"
+			end
         end
 
         function Keybind:SetVisible(Visible: boolean)
@@ -2430,7 +2427,6 @@ function Menu.Keybinds(): Keybinds
             Object.Visible = Visible
             UpdateFrameSize()
         end
-
         
         Keybinds.List[Name] = Keybind
         UpdateFrameSize()
@@ -2456,7 +2452,6 @@ function Menu.Keybinds(): Keybinds
 
     return Keybinds
 end
-
 
 function Menu.Indicators(): Indicators
     local Frame = Instance.new("Frame")
@@ -2546,7 +2541,6 @@ function Menu.Indicators(): Indicators
         StateLabel.TextXAlignment = Enum.TextXAlignment.Right
         StateLabel.Parent = Indicator.self
 
-
         if Type == "Bar" then
             local ObjectBase = Instance.new("Frame")
             local ValueLabel = Instance.new("TextLabel")
@@ -2570,7 +2564,6 @@ function Menu.Indicators(): Indicators
             Object.Size = UDim2.new(0, 230, 0, 15)
         end
 
-
         function Indicator:Update(Value: string, ...)
             if Indicators.List[Name] then
                 if Type == "Text" then
@@ -2589,7 +2582,6 @@ function Menu.Indicators(): Indicators
             end
         end
 
-
         function Indicator:SetVisible(Visible: boolean)
             if typeof(Visible) ~= "boolean" then return end
             if Object.Visible == Visible then return end
@@ -2598,13 +2590,11 @@ function Menu.Indicators(): Indicators
             UpdateFrameSize()
         end
 
-        
         Indicator:Update(Indicator.Value, ...)
         Indicators.List[Name] = Indicator
         UpdateFrameSize()
         return Indicator
     end
-
 
     function Indicators.Remove(Name: string)
         if Indicators.List[Name] then
@@ -2613,7 +2603,6 @@ function Menu.Indicators(): Indicators
         end
         UpdateFrameSize()
     end
-
 
     function Indicators:SetVisible(Visible: boolean)
         self.self.Visible = Visible
@@ -2730,4 +2719,6 @@ function Menu:Unload()
     Menu.Screen:Destroy()
 end
 
+Menu.CurrentKeybinds = Menu.Keybinds()
+Menu.CurrentKeybinds:SetPosition(UDim2.new(0, 1, 0, 1))
 return Menu
