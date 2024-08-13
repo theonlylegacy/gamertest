@@ -6,7 +6,7 @@
 -- // Menu Effects (OnHover, OnClick)
 
 local Settings = {
-    Accent = Color3.fromHex("#03B7FF"),
+    Accent = Color3.fromRGB(119, 120, 255),
     Font = Enum.Font.SourceSans,
     IsBackgroundTransparent = true,
     Rounded = false,
