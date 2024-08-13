@@ -214,6 +214,7 @@ Menu.Screen.DisplayOrder = 3
 protect_gui(Menu.Screen, CoreGui)
 Menu.ScreenSize = Menu.Screen.AbsoluteSize
 
+local MouseObject = nil
 local Menu_Frame = Instance.new("Frame")
 local MenuScaler_Button = Instance.new("TextButton")
 local Title_Label = Instance.new("TextLabel")
@@ -492,6 +493,37 @@ function Menu:SetVisible(Visible: boolean)
     local IsVisible = typeof(Visible) == "boolean" and Visible
     Menu_Frame.Visible = IsVisible
     Menu.IsVisible = IsVisible
+
+	if Visible then
+		local Image = Instance.new("ImageLabel")
+		Image.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		Image.BackgroundTransparency = 1
+		Image.BorderSizePixel = 0
+		Image.Position = UDim2.new(0, 0, 0, 0)
+		Image.Rotation = -25
+		Image.Size = UDim2.new(0, 15, 0, 20)
+		Image.ZIndex = 3
+		Image.Image = "rbxassetid://8539638324"
+		Image.ImageColor3 = Menu.Accent
+		Image.Parent = self.Screen
+
+		MouseObject = Image
+
+		Connections["Visible"] = UserInput.InputChanged:Connect(function(Input)
+			if Input.UserInputType == Enum.UserInputType.MouseMovement and Image then
+				Image.Position = UDim2.new(0, Input.Position.X - 5, 0, Input.Position.Y - 5)
+			end
+		end)
+	else
+		if Connections["Visible"] and Connections["Visible"].Connected then
+			Connections["Visible"]:Disconnect()
+		end
+
+		if MouseObject then
+			MouseObject:Destroy()
+		end
+	end
+	
     if IsVisible == false then
         UpdateSelected()
     end
@@ -589,7 +621,6 @@ function Menu.Tab(Tab_Name: string): Tab
     UpdateTabs()
     return Tab
 end
-
 
 function Menu.Container(Tab_Name: string, Container_Name: string, Side: string): Container
     local Tab = GetTab(Tab_Name)
@@ -1195,7 +1226,7 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
     end))
 
     Button.Name = "Slider"
-    Button.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    Button.BackgroundColor3 = Menu.ItemColor
     Button.BorderColor3 = Color3.new()
     Button.Position = UDim2.fromOffset(0, 20)
     Button.Size = UDim2.new(1, -40, 0, 5)
@@ -2722,4 +2753,4 @@ end
 
 Menu.CurrentKeybinds = Menu.Keybinds()
 Menu.CurrentKeybinds:SetPosition(UDim2.new(0, 1, 0, 1))
-return Menu
+getgenv().Library = Menu
