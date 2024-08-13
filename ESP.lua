@@ -163,6 +163,7 @@ end
 do
 	local ScreenGui = Functions:Create("ScreenGui", {
 		Parent = CoreGui,
+                ZIndex = 2,
 		Name = "ESPHolder",
 	});
 
@@ -209,7 +210,6 @@ do
 		local Flag1 = Functions:Create("TextLabel", {Parent = ScreenGui, Position = UDim2.new(1, 0, 0, 0), Size = UDim2.new(0, 100, 0, 20), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, TextColor3 = RGB(255, 255, 255), Font = Enum.Font.Code, TextSize = ESP.FontSize, TextStrokeTransparency = 0, TextStrokeColor3 = RGB(0, 0, 0)})
 		local Flag2 = Functions:Create("TextLabel", {Parent = ScreenGui, Position = UDim2.new(1, 0, 0, 0), Size = UDim2.new(0, 100, 0, 20), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, TextColor3 = RGB(255, 255, 255), Font = Enum.Font.Code, TextSize = ESP.FontSize, TextStrokeTransparency = 0, TextStrokeColor3 = RGB(0, 0, 0)})
 		
-		print("p1")
 		
 		local Updater = function()
 			local Connection
@@ -239,8 +239,6 @@ do
 				end
 			end
 			
-			print("p2")
-
 			Connection = TInsert(Connections, Euphoria.RunService.RenderStepped:Connect(function()
 				local Entry = ReplicationInterface.getEntry(Player)
 				local ThirdPersonObject = Entry and Entry:getThirdPersonObject()
