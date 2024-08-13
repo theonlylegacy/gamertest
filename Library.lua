@@ -15,8 +15,8 @@ local Settings = {
     
     ItemColor = Color3.fromRGB(30, 30, 30),
     BorderColor = Color3.fromRGB(45, 45, 45),
-    MinSize = Vector2.new(500, 400),
-    MaxSize = Vector2.new(500, 400)
+    MinSize = Vector2.new(550, 600),
+    MaxSize = Vector2.new(550, 600)
 }
 
 
@@ -31,7 +31,7 @@ local Dragging = {Gui = nil, True = true}
 local Draggables = {}
 local ToolTip = {Enabled = false, Content = "", Item = nil}
 
-local HotkeyRemoveKey = Enum.KeyCode.RightControl
+local HotkeyRemoveKey = Enum.KeyCode.BackSpace
 local Selected = {
     Frame = nil,
     Item = nil,
