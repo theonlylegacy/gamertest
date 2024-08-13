@@ -31,7 +31,7 @@ local Dragging = {Gui = nil, True = true}
 local Draggables = {}
 local ToolTip = {Enabled = false, Content = "", Item = nil}
 
-local HotkeyRemoveKey = Enum.KeyCode.BackSpace
+local HotkeyRemoveKey = Enum.KeyCode.Backspace
 local Selected = {
     Frame = nil,
     Item = nil,
