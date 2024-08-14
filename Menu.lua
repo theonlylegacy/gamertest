@@ -426,7 +426,9 @@ end
 local function GetContainer(Tab_Name: string, Container_Name: string): Container
     assert(Tab_Name, "NO TAB_NAME GIVEN")
     assert(Container_Name, "NO CONTAINER NAME GIVEN")
-    return GetTab(Tab_Name)[Container_Name]
+    local Tab = GetTab(Tab_Name)
+	
+    return Tab and Tab[Container_Name]
 end
 
 local function CheckItemIndex(Item_Index: number, Method: string)
