@@ -863,7 +863,7 @@ function Menu.TextBox(Tab_Name: string, Container_Name: string, Name: string, Va
     return #Items
 end
 
-function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, Boolean: boolean, Keybind: boolean, Callback: any, ToolTip: string): CheckBox
+function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, Boolean: boolean, Keybind: boolean, Keybind_Name: string, Callback: any, ToolTip: string): CheckBox
     local Container = GetContainer(Tab_Name, Container_Name)
     local Label = CreateLabel(Container.self, "CheckBox", Name, nil, UDim2.fromOffset(20, Container:GetHeight()))
     local Button = Instance.new("TextButton")
@@ -980,7 +980,7 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
         end))
 		
 		table.insert(Threads, task.delay(0.5, function()
-			KeybindObject = Menu.CurrentKeybinds.Add(Name, "None")
+			KeybindObject = Menu.CurrentKeybinds.Add(Keybind_Name, "None")
 		end))
     end
 
