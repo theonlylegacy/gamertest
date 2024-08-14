@@ -138,7 +138,7 @@ local function CreateLabel(Parent: Instance, Name: string, Text: string, Size: U
     Label.BackgroundTransparency = 1
     Label.Size = Size or UDim2.new(1, 0, 0, 15)
     Label.Position = Position or UDim2.new()
-    Label.Font = Enum.Font.SourceSans
+    Label.Font = Menu.Font
     Label.Text = Text or ""
     Label.TextColor3 = Color3.new(1, 1, 1)
     Label.TextSize = 14
@@ -248,7 +248,7 @@ MenuScaler_Button.BorderColor3 = Color3.fromRGB(40, 40, 40)
 MenuScaler_Button.BorderSizePixel = 0
 MenuScaler_Button.Position = UDim2.new(1, -15, 1, -15)
 MenuScaler_Button.Size = UDim2.fromOffset(15, 15)
-MenuScaler_Button.Font = Enum.Font.SourceSans
+MenuScaler_Button.Font = Menu.Font
 MenuScaler_Button.Text = ""
 MenuScaler_Button.TextColor3 = Color3.new(1, 1, 1)
 MenuScaler_Button.TextSize = 14
@@ -289,7 +289,7 @@ Title_Label.Name = "Title"
 Title_Label.BackgroundTransparency = 1
 Title_Label.Position = UDim2.new(0, 5, 0, 0)
 Title_Label.Size = UDim2.new(1, -10, 0, 15)
-Title_Label.Font = Enum.Font.SourceSans
+Title_Label.Font = Menu.Font
 Title_Label.Text = ""
 Title_Label.TextColor3 = Color3.new(1, 1, 1)
 Title_Label.TextSize = 14
@@ -333,7 +333,7 @@ ToolTip_Label.AutomaticSize = Enum.AutomaticSize.XY
 ToolTip_Label.Size = UDim2.fromOffset(0, 0, 0, 15)
 ToolTip_Label.Text = ""
 ToolTip_Label.TextSize = 14
-ToolTip_Label.Font = Enum.Font.SourceSans
+ToolTip_Label.Font = Menu.Font
 ToolTip_Label.TextColor3 = Color3.new(1, 1, 1)
 ToolTip_Label.ZIndex = 5
 ToolTip_Label.Visible = false
@@ -596,7 +596,7 @@ function Menu.Tab(Tab_Name: string): Tab
     Button.Name = "Button"
     Button.BackgroundColor3 = Menu.ItemColor
     Button.BorderSizePixel = 0
-    Button.Font = Enum.Font.SourceSans
+    Button.Font = Menu.Font
     Button.Text = Tab_Name
     Button.TextColor3 = Color3.fromRGB(205, 205, 205)
     Button.TextSize = 14
@@ -769,7 +769,7 @@ function Menu.Button(Tab_Name: string, Container_Name: string, Name: string, Cal
     GuiButton.BorderMode = Enum.BorderMode.Inset
     GuiButton.Position = UDim2.fromOffset(20, Container:GetHeight())
     GuiButton.Size = UDim2.new(1, -50, 0, 20)
-    GuiButton.Font = Enum.Font.SourceSansSemibold
+    GuiButton.Font = Menu.FontSemibold
     GuiButton.Text = Name
     GuiButton.TextColor3 = Color3.new(1, 1, 1)
     GuiButton.TextSize = 14
@@ -840,7 +840,7 @@ function Menu.TextBox(Tab_Name: string, Container_Name: string, Name: string, Va
     GuiTextBox.BorderMode = Enum.BorderMode.Inset
     GuiTextBox.Position = UDim2.fromOffset(0, 20)
     GuiTextBox.Size = UDim2.new(1, -50, 0, 20)
-    GuiTextBox.Font = Enum.Font.SourceSansSemibold
+    GuiTextBox.Font = Menu.FontSemibold
     GuiTextBox.Text = TextBox.Value
     GuiTextBox.TextColor3 = Color3.new(1, 1, 1)
     GuiTextBox.TextSize = 14
@@ -955,7 +955,7 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
         HotkeyButton.BackgroundTransparency = 1
         HotkeyButton.Position = UDim2.new(1, -100, 0, 4)
         HotkeyButton.Size = UDim2.fromOffset(75, 8)
-        HotkeyButton.Font = Enum.Font.SourceSans
+        HotkeyButton.Font = Menu.Font
         HotkeyButton.Text = "[None]"
         HotkeyButton.TextColor3 = Color3.new(1, 1, 1)
         HotkeyButton.TextSize = 12
@@ -1065,7 +1065,7 @@ function Menu.Hotkey(Tab_Name: string, Container_Name: string, Name: string, Key
     Button.BackgroundTransparency = 1
     Button.Position = UDim2.new(1, -100, 0, 4)
     Button.Size = UDim2.fromOffset(75, 8)
-    Button.Font = Enum.Font.SourceSans
+    Button.Font = Menu.Font
     Button.Text = Key and "[" .. Key.Name .. "]" or "[None]"
     Button.TextColor3 = Color3.new(1, 1, 1)
     Button.TextSize = 12
@@ -1091,7 +1091,7 @@ function Menu.Hotkey(Tab_Name: string, Container_Name: string, Name: string, Key
     HotkeyToggle.BorderSizePixel = 0
     HotkeyToggle.Position = UDim2.new()
     HotkeyToggle.Size = UDim2.new(1, 0, 0, 13)
-    HotkeyToggle.Font = Enum.Font.SourceSans
+    HotkeyToggle.Font = Menu.Font
     HotkeyToggle.Text = "Toggle"
     HotkeyToggle.TextColor3 = Menu.Accent
     HotkeyToggle.TextSize = 14
@@ -1116,7 +1116,7 @@ function Menu.Hotkey(Tab_Name: string, Container_Name: string, Name: string, Key
     HotkeyHold.BorderSizePixel = 0
     HotkeyHold.Position = UDim2.new(0, 0, 0, 15)
     HotkeyHold.Size = UDim2.new(1, 0, 0, 13)
-    HotkeyHold.Font = Enum.Font.SourceSans
+    HotkeyHold.Font = Menu.Font
     HotkeyHold.Text = "Hold"
     HotkeyHold.TextColor3 = Color3.new(1, 1, 1)
     HotkeyHold.TextSize = 14
@@ -1260,7 +1260,7 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
     ValueBox.BackgroundTransparency = 1
     ValueBox.Position = UDim2.new(1, -65, 0, 5)
     ValueBox.Size = UDim2.fromOffset(50, 10)
-    ValueBox.Font = Enum.Font.SourceSans
+    ValueBox.Font = Menu.Font
     ValueBox.Text = ""
     ValueBox.TextColor3 = Color3.new(1, 1, 1)
     ValueBox.TextSize = 12
@@ -1278,7 +1278,7 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
     ValueLabel.BackgroundTransparency = 1
     ValueLabel.Position = UDim2.new(1, 0, 0, 2)
     ValueLabel.Size = UDim2.new(0, 0, 1, 0)
-    ValueLabel.Font = Enum.Font.SourceSansBold
+    ValueLabel.Font = Menu.FontBold
     ValueLabel.Text = ""
     ValueLabel.TextColor3 = Color3.new(1, 1, 1)
     ValueLabel.TextSize = 14
@@ -1401,7 +1401,7 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
     Button.BorderColor3 = Color3.new()
     Button.Position = UDim2.new(1, -35, 0, 4)
     Button.Size = UDim2.fromOffset(20, 8)
-    Button.Font = Enum.Font.SourceSans
+    Button.Font = Menu.Font
     Button.Text = ""
     Button.TextColor3 = Color3.new(1, 1, 1)
     Button.TextSize = 12
@@ -1431,7 +1431,7 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
     HexBox.Size = UDim2.new(1, -10, 0, 20)
     HexBox.Position = UDim2.fromOffset(5, 150)
     HexBox.Text = "#" .. string.upper(ColorPicker.Color:ToHex())
-    HexBox.Font = Enum.Font.SourceSansSemibold
+    HexBox.Font = Menu.FontSemibold
     HexBox.TextSize = 14
     HexBox.TextColor3 = Color3.new(1, 1, 1)
     HexBox.ClearTextOnFocus = false
@@ -1626,7 +1626,7 @@ function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, V
         Button.BorderColor3 = Color3.new()
         Button.BorderSizePixel = 0
         Button.Size = UDim2.new(1, 0, 0, 15)
-        Button.Font = Enum.Font.SourceSans
+        Button.Font = Menu.Font
         Button.Text = tostring(Name)
         Button.TextColor3 = ComboBox.Value == Button.Text and Menu.Accent or Color3.new(1, 1, 1)
         Button.TextSize = 14
@@ -1720,7 +1720,7 @@ function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, V
     Button.BorderColor3 = Color3.new()
     Button.Position = UDim2.new(0, 0, 0, 20)
     Button.Size = UDim2.new(1, -40, 0, 15)
-    Button.Font = Enum.Font.SourceSans
+    Button.Font = Menu.Font
     Button.Text = ComboBox.Value
     Button.TextColor3 = Color3.new(1, 1, 1)
     Button.TextSize = 14
@@ -1741,7 +1741,7 @@ function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, V
     Symbol.BackgroundTransparency = 1
     Symbol.Position = UDim2.new(1, -10, 0, 0)
     Symbol.Size = UDim2.new(0, 5, 1, 0)
-    Symbol.Font = Enum.Font.SourceSans
+    Symbol.Font = Menu.Font
     Symbol.Text = "-"
     Symbol.TextColor3 = Color3.new(1, 1, 1)
     Symbol.TextSize = 14
@@ -1799,8 +1799,6 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
         end
 
         for k, v in next, MultiSelect.Order do
-            print(Selected[v])
-
             if table.find(Selected, v) then
                 table.insert(Order, v)
             end
@@ -1823,7 +1821,7 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
         Button.BorderColor3 = Color3.new()
         Button.BorderSizePixel = 0
         Button.Size = UDim2.new(1, 0, 0, 15)
-        Button.Font = Enum.Font.SourceSans
+        Button.Font = Menu.Font
         Button.Text = Name
         Button.TextColor3 = Checked and Menu.Accent or Color3.new(1, 1, 1)
         Button.TextSize = 14
@@ -1910,7 +1908,7 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
     Button.BorderColor3 = Color3.new()
     Button.Position = UDim2.new(0, 0, 0, 20)
     Button.Size = UDim2.new(1, -40, 0, 15)
-    Button.Font = Enum.Font.SourceSans
+    Button.Font = Menu.Font
     Button.Text = "[...]"
     Button.TextColor3 = Color3.new(1, 1, 1)
     Button.TextSize = 14
@@ -1929,7 +1927,7 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
     Symbol.BackgroundTransparency = 1
     Symbol.Position = UDim2.new(1, -10, 0, 0)
     Symbol.Size = UDim2.new(0, 5, 1, 0)
-    Symbol.Font = Enum.Font.SourceSans
+    Symbol.Font = Menu.Font
     Symbol.Text = "-"
     Symbol.TextColor3 = Color3.new(1, 1, 1)
     Symbol.TextSize = 14
@@ -2002,7 +2000,7 @@ function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Mu
         Button.BorderColor3 = Color3.new()
         Button.BorderSizePixel = 0
         Button.Size = UDim2.new(1, 0, 0, 15)
-        Button.Font = Enum.Font.SourceSans
+        Button.Font = Menu.Font
         Button.Text = Name
         Button.TextSize = 14
         Button.TextXAlignment = Enum.TextXAlignment.Left
@@ -2180,7 +2178,7 @@ function Menu.Notify(Content: string, Delay: number)
     Text.Position = UDim2.new(0.5, -100, 1, -150 - (GetDictionaryLength(Notifications) * 15))
     Text.Size = UDim2.new(0, 0, 0, 15)
     Text.Text = Content
-    Text.Font = Enum.Font.SourceSans
+    Text.Font = Menu.Font
     Text.TextSize = 17
     Text.TextColor3 = Color3.new(1, 1, 1)
     Text.TextStrokeTransparency = 0.2
@@ -2258,7 +2256,7 @@ function Menu.Prompt(Message: string, Callback: any, ...)
         Button.Text = Text
         Button.TextStrokeTransparency = 0.8
         Button.TextSize = 14
-        Button.Font = Enum.Font.SourceSans
+        Button.Font = Menu.Font
         Button.TextColor3 = Color3.new(1, 1, 1)
         Button.Parent = Prompt
         table.insert(Connections, Button.MouseButton1Click:Connect(function() Prompt:Destroy() Callback(unpack(Arguments)) end))
@@ -2275,7 +2273,7 @@ function Menu.Prompt(Message: string, Callback: any, ...)
     Title.Position = UDim2.new(0, 0, 0.5, -100)
     Title.Text = Message
     Title.TextSize = 14
-    Title.Font = Enum.Font.SourceSans
+    Title.Font = Menu.Font
     Title.TextColor3 = Color3.new(1, 1, 1)
     Title.Parent = Prompt
 
@@ -2313,7 +2311,7 @@ function Menu.Spectators(): Spectators
     Title.BackgroundTransparency = 1
     Title.Position = UDim2.new(0, 5, 0, 5)
     Title.Size = UDim2.new(0, 240, 0, 15)
-    Title.Font = Enum.Font.SourceSansSemibold
+    Title.Font = Menu.FontSemibold
     Title.Text = "Spectators"
     Title.TextColor3 = Color3.new(1, 1, 1)
     Title.TextSize = 14
@@ -2353,7 +2351,7 @@ function Menu.Spectators(): Spectators
         NameLabel.BackgroundTransparency = 1
         NameLabel.Position = UDim2.new(0, 20, 0, 0)
         NameLabel.Size = UDim2.new(0, 230, 1, 0)
-        NameLabel.Font = Enum.Font.SourceSans
+        NameLabel.Font = Menu.Font
         NameLabel.Text = tostring(Name)
         NameLabel.TextColor3 = Color3.new(1, 1, 1)
         NameLabel.TextSize = 14
@@ -2411,7 +2409,7 @@ function Menu.Keybinds(): Keybinds
     Title.BackgroundTransparency = 1
     Title.Position = UDim2.new(0, 5, 0, 5)
     Title.Size = UDim2.new(0, 240, 0, 15)
-    Title.Font = Enum.Font.SourceSansSemibold
+    Title.Font = Menu.FontSemibold
     Title.Text = "Keybinds"
     Title.TextColor3 = Color3.new(1, 1, 1)
     Title.TextSize = 14
@@ -2453,7 +2451,7 @@ function Menu.Keybinds(): Keybinds
         NameLabel.BackgroundTransparency = 1
         NameLabel.Position = UDim2.new(0, 5, 0, 0)
         NameLabel.Size = UDim2.new(0, 180, 1, 0)
-        NameLabel.Font = Enum.Font.SourceSans
+        NameLabel.Font = Menu.Font
         NameLabel.Text = Name
         NameLabel.TextColor3 = Color3.new(1, 1, 1)
         NameLabel.TextSize = 14
@@ -2464,7 +2462,7 @@ function Menu.Keybinds(): Keybinds
         StateLabel.BackgroundTransparency = 1
         StateLabel.Position = UDim2.new(0, 190, 0, 0)
         StateLabel.Size = UDim2.new(0, 40, 1, 0)
-        StateLabel.Font = Enum.Font.SourceSans
+        StateLabel.Font = Menu.Font
         StateLabel.Text = "[" .. tostring(State) .. "]"
         StateLabel.TextColor3 = Color3.new(1, 1, 1)
         StateLabel.TextSize = 14
@@ -2539,7 +2537,7 @@ function Menu.Indicators(): Indicators
     Title.BackgroundTransparency = 1
     Title.Position = UDim2.new(0, 5, 0, 5)
     Title.Size = UDim2.new(0, 240, 0, 15)
-    Title.Font = Enum.Font.SourceSansSemibold
+    Title.Font = Menu.FontSemibold
     Title.Text = "Indicators"
     Title.TextColor3 = Color3.new(1, 1, 1)
     Title.TextSize = 14
@@ -2583,7 +2581,7 @@ function Menu.Indicators(): Indicators
         NameLabel.BackgroundTransparency = 1
         NameLabel.Position = UDim2.new(0, 5, 0, 0)
         NameLabel.Size = UDim2.new(0, 130, 0, 15)
-        NameLabel.Font = Enum.Font.SourceSans
+        NameLabel.Font = Menu.Font
         NameLabel.Text = Name
         NameLabel.TextColor3 = Color3.new(1, 1, 1)
         NameLabel.TextSize = 14
@@ -2594,7 +2592,7 @@ function Menu.Indicators(): Indicators
         StateLabel.BackgroundTransparency = 1
         StateLabel.Position = UDim2.new(0, 180, 0, 0)
         StateLabel.Size = UDim2.new(0, 40, 0, 15)
-        StateLabel.Font = Enum.Font.SourceSans
+        StateLabel.Font = Menu.Font
         StateLabel.Text = "[" .. tostring(Value) .. "]"
         StateLabel.TextColor3 = Color3.new(1, 1, 1)
         StateLabel.TextSize = 14
@@ -2697,7 +2695,7 @@ function Menu.Watermark(): Watermark
     Watermark.Title.BackgroundTransparency = 1
     Watermark.Title.Position = UDim2.new(0, 5, 0, -1)
     Watermark.Title.Size = UDim2.new(0, 240, 0, 15)
-    Watermark.Title.Font = Enum.Font.SourceSansSemibold
+    Watermark.Title.Font = Menu.FontSemibold
     Watermark.Title.Text = ""
     Watermark.Title.TextColor3 = Color3.new(1, 1, 1)
     Watermark.Title.TextSize = 14
