@@ -439,6 +439,10 @@ function Menu:GetItem(Index: number): Item
     return Items[Index]
 end
 
+function Menu:GetContainer(Tab_Name, Container_Name)
+    return GetContainer(Tab_Name, Container_Name)
+end
+
 function Menu:FindItem(Tab_Name: string, Container_Name: string, Class_Name: string, Name: string): Item
     local Result
     for Index, Item in ipairs(Items) do
