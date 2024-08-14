@@ -549,7 +549,6 @@ function Menu.Line(Parent: Instance, Size: UDim2, Position: UDim2): Line
     return Line
 end
 
-
 function Menu.Tab(Tab_Name: string): Tab
     assert(Tab_Name and typeof(Tab_Name) == "string", "TAB_NAME REQUIRED")
     if Tabs[Tab_Name] then return error("TAB_NAME '" .. tostring(Tab_Name) .. "' ALREADY EXISTS") end
@@ -577,6 +576,7 @@ function Menu.Tab(Tab_Name: string): Tab
         AddEventListener(Frame, function()
             Frame.ScrollBarImageColor3 = Menu.Accent
         end)
+
         table.insert(Connections, Frame:GetPropertyChangedSignal("CanvasPosition"):Connect(UpdateSelected))
 
         ListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
@@ -593,6 +593,7 @@ function Menu.Tab(Tab_Name: string): Tab
     Button.TextColor3 = Color3.fromRGB(205, 205, 205)
     Button.TextSize = 14
     Button.Parent = TabIndex_Frame
+	
     AddEventListener(Button, function()
         if Button.TextColor3 == Color3.fromRGB(205, 205, 205) then
             Button.BackgroundColor3 = Menu.ItemColor
@@ -617,7 +618,10 @@ function Menu.Tab(Tab_Name: string): Tab
 
     Tabs[Tab_Name] = Tab
 
-    ChangeTab(Tab_Name)
+	if Tab.Index == 1 then
+		ChangeTab(Tab_Name)
+	end
+
     UpdateTabs()
     return Tab
 end
@@ -2753,4 +2757,4 @@ end
 
 Menu.CurrentKeybinds = Menu.Keybinds()
 Menu.CurrentKeybinds:SetPosition(UDim2.new(0, 10, 0, 410))
-return Menu
+getgenv().Menu = Menu
