@@ -769,7 +769,7 @@ function Menu.Button(Tab_Name: string, Container_Name: string, Name: string, Cal
     GuiButton.BorderMode = Enum.BorderMode.Inset
     GuiButton.Position = UDim2.fromOffset(20, Container:GetHeight())
     GuiButton.Size = UDim2.new(1, -50, 0, 20)
-    GuiButton.Font = Menu.FontSemibold
+    GuiButton.Font = Menu.Font
     GuiButton.Text = Name
     GuiButton.TextColor3 = Color3.new(1, 1, 1)
     GuiButton.TextSize = 14
@@ -840,7 +840,7 @@ function Menu.TextBox(Tab_Name: string, Container_Name: string, Name: string, Va
     GuiTextBox.BorderMode = Enum.BorderMode.Inset
     GuiTextBox.Position = UDim2.fromOffset(0, 20)
     GuiTextBox.Size = UDim2.new(1, -50, 0, 20)
-    GuiTextBox.Font = Menu.FontSemibold
+    GuiTextBox.Font = Menu.Font
     GuiTextBox.Text = TextBox.Value
     GuiTextBox.TextColor3 = Color3.new(1, 1, 1)
     GuiTextBox.TextSize = 14
@@ -1278,7 +1278,7 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
     ValueLabel.BackgroundTransparency = 1
     ValueLabel.Position = UDim2.new(1, 0, 0, 2)
     ValueLabel.Size = UDim2.new(0, 0, 1, 0)
-    ValueLabel.Font = Menu.FontBold
+    ValueLabel.Font = Menu.Font
     ValueLabel.Text = ""
     ValueLabel.TextColor3 = Color3.new(1, 1, 1)
     ValueLabel.TextSize = 14
@@ -1431,7 +1431,7 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
     HexBox.Size = UDim2.new(1, -10, 0, 20)
     HexBox.Position = UDim2.fromOffset(5, 150)
     HexBox.Text = "#" .. string.upper(ColorPicker.Color:ToHex())
-    HexBox.Font = Menu.FontSemibold
+    HexBox.Font = Menu.Font
     HexBox.TextSize = 14
     HexBox.TextColor3 = Color3.new(1, 1, 1)
     HexBox.ClearTextOnFocus = false
@@ -2311,7 +2311,7 @@ function Menu.Spectators(): Spectators
     Title.BackgroundTransparency = 1
     Title.Position = UDim2.new(0, 5, 0, 5)
     Title.Size = UDim2.new(0, 240, 0, 15)
-    Title.Font = Menu.FontSemibold
+    Title.Font = Menu.Font
     Title.Text = "Spectators"
     Title.TextColor3 = Color3.new(1, 1, 1)
     Title.TextSize = 14
@@ -2409,7 +2409,7 @@ function Menu.Keybinds(): Keybinds
     Title.BackgroundTransparency = 1
     Title.Position = UDim2.new(0, 5, 0, 5)
     Title.Size = UDim2.new(0, 240, 0, 15)
-    Title.Font = Menu.FontSemibold
+    Title.Font = Menu.Font
     Title.Text = "Keybinds"
     Title.TextColor3 = Color3.new(1, 1, 1)
     Title.TextSize = 14
@@ -2537,7 +2537,7 @@ function Menu.Indicators(): Indicators
     Title.BackgroundTransparency = 1
     Title.Position = UDim2.new(0, 5, 0, 5)
     Title.Size = UDim2.new(0, 240, 0, 15)
-    Title.Font = Menu.FontSemibold
+    Title.Font = Menu.Font
     Title.Text = "Indicators"
     Title.TextColor3 = Color3.new(1, 1, 1)
     Title.TextSize = 14
@@ -2695,7 +2695,7 @@ function Menu.Watermark(): Watermark
     Watermark.Title.BackgroundTransparency = 1
     Watermark.Title.Position = UDim2.new(0, 5, 0, -1)
     Watermark.Title.Size = UDim2.new(0, 240, 0, 15)
-    Watermark.Title.Font = Menu.FontSemibold
+    Watermark.Title.Font = Menu.Font
     Watermark.Title.Text = ""
     Watermark.Title.TextColor3 = Color3.new(1, 1, 1)
     Watermark.Title.TextSize = 14
