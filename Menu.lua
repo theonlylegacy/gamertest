@@ -2757,4 +2757,4 @@ end
 
 Menu.CurrentKeybinds = Menu.Keybinds()
 Menu.CurrentKeybinds:SetPosition(UDim2.new(0, 10, 0, 410))
-getgenv().Menu = Menu
+return Menu
