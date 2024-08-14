@@ -1,4 +1,3 @@
--- // make multiselect in order
 -- // add border pixel math to dragging
 -- // containers canvasscroll update on setvisible
 -- // Dragging sys has errors
@@ -7,7 +6,7 @@
 
 local Settings = {
     Accent = Color3.fromRGB(119, 120, 255),
-    Font = Enum.Font.SourceSans,
+    Font = Enum.Font.RobotoMono,
     IsBackgroundTransparent = true,
     Rounded = false,
     Dim = false,
@@ -99,6 +98,7 @@ local function CreateCorner(Parent: Instance, Pixels: number): UICorner
     local UICorner = Instance.new("UICorner")
     UICorner.Name = "Corner"
     UICorner.Parent = Parent
+
     return UICorner
 end
 
@@ -112,6 +112,7 @@ local function CreateStroke(Parent: Instance, Color: Color3, Thickness: number, 
     UIStroke.Transparency = Transparency or 0
     UIStroke.Enabled = true
     UIStroke.Parent = Parent
+
     return UIStroke
 end 
 
@@ -143,6 +144,7 @@ local function CreateLabel(Parent: Instance, Name: string, Text: string, Size: U
     Label.TextSize = 14
     Label.TextXAlignment = Enum.TextXAlignment.Left
     Label.Parent = Parent
+    
     return Label
 end
 
@@ -1763,7 +1765,7 @@ function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, V
     return #Items
 end
 
-function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string, Value_Items: table, Callback: any, ToolTip: string): MultiSelect
+function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string, Value_Items: table, Order_Items: table, Callback: any, ToolTip: string): MultiSelect
     local Container = GetContainer(Tab_Name, Container_Name)
     local Label = CreateLabel(Container.self, "MultiSelect", Name, UDim2.new(1, -10, 0, 15), UDim2.fromOffset(20, Container:GetHeight()))
     local Button = Instance.new("TextButton")
@@ -1779,21 +1781,33 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
     MultiSelect.Index = #Items + 1
     MultiSelect.Callback = typeof(Callback) == "function" and Callback or function() end
     MultiSelect.Items = typeof(Value_Items) == "table" and Value_Items or {}
+    MultiSelect.Order = typeof(Order_Items) == "table" and Order_Items or {}
     MultiSelect.Value = {}
 
     local function GetSelectedItems(): table
         local Selected = {}
+        local Order = {}
 
         for k, v in next, MultiSelect.Items do
             if v == true then table.insert(Selected, k) end
         end
 
-        return Selected
+        for k, v in next, MultiSelect.Order do
+            print(Selected[v])
+
+            if table.find(Selected, v) then
+                table.insert(Order, v)
+            end
+        end
+
+        return Selected, Order
     end
 
     local function UpdateValue()
-        MultiSelect.Value = GetSelectedItems()
-        Button.Text = #MultiSelect.Value > 0 and table.concat(MultiSelect.Value, ", ") or "[...]"
+        local Selected, Order = GetSelectedItems()
+
+        MultiSelect.Value = Selected
+        Button.Text = #MultiSelect.Value > 0 and table.concat(Order, ", ") or "[...]"
     end
 
     local ItemObjects = {}
@@ -1818,7 +1832,7 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
 
         AddEventListener(Button, function()
             Button.BackgroundColor3 = Menu.ItemColor
-            Button.TextColor3 = table.find(GetSelectedItems(), Button.Text) and Menu.Accent or Color3.new(1, 1, 1)
+            Button.TextColor3 = table.find(select(1, GetSelectedItems()), Button.Text) and Menu.Accent or Color3.new(1, 1, 1)
         end)
 
         if GetDictionaryLength(MultiSelect.Items) >= 6 then
@@ -1836,15 +1850,17 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
             for _, Button in ipairs(ItemObjects) do
                 Button:Destroy()
             end
+
             table.clear(ItemObjects)
 
             List.CanvasSize = UDim2.new()
             List.Size = UDim2.fromOffset(Button.AbsoluteSize.X, math.clamp(GetDictionaryLength(self.Items) * 15, 15, 90))
-            for Name, Checked in pairs(self.Items) do
-                AddItem(tostring(Name), Checked)
+
+            for _, Name in pairs(self.Order) do
+                AddItem(tostring(Name), self.Items[Name])
             end
         else
-            local Selected = GetSelectedItems()
+            local Selected, Order = GetSelectedItems()
             for _, Button in ipairs(ItemObjects) do
                 local Checked = table.find(Selected, Button.Text)
                 Button.TextColor3 = Checked and Menu.Accent or Color3.new(1, 1, 1)
@@ -1958,9 +1974,11 @@ function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Mu
 
     local function GetSelectedItems(): table
         local Selected = {}
+        
         for k, v in pairs(ListBox.Items) do
             if v == true then table.insert(Selected, k) end
         end
+        
         return Selected
     end
 
