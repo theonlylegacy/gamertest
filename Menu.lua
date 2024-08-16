@@ -912,6 +912,10 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
         
         Label.Visible = Visible
         Container:UpdateSize(Visible and 20 or -20, Label)
+
+        if KeybindObject then
+            KeybindObject:SetVisible(Visible)
+        end
     end
 
     function CheckBox:GetValue(): boolean
@@ -1310,7 +1314,7 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
 
 
     Slider:SetValue(Slider.Value)
-    Container:UpdateSize(30)
+    Container:UpdateSize(35)
     table.insert(Items, Slider)
     return #Items
 end
