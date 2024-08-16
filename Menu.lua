@@ -972,6 +972,10 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
         end))
 
         table.insert(Connections, UserInput.InputBegan:Connect(function(Input)
+            if UserInput:GetFocusedTextBox() or not Label.Visible then
+                return
+            end
+            
             if Editing then
                 local Key = Input.KeyCode
                 if Key ~= Enum.KeyCode.Unknown and Key ~= HotkeyRemoveKey then
@@ -1153,6 +1157,10 @@ function Menu.Hotkey(Tab_Name: string, Container_Name: string, Name: string, Key
     end))
 
     table.insert(Connections, UserInput.InputBegan:Connect(function(Input)
+        if UserInput:GetFocusedTextBox() then
+            return
+        end
+
         if Hotkey.Editing then
             local Key = Input.KeyCode
             if Key == Enum.KeyCode.Unknown then
