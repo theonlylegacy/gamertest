@@ -510,7 +510,7 @@ function Menu:SetVisible(Visible: boolean)
 		Image.Position = UDim2.new(0, 0, 0, 0)
 		Image.Rotation = -25
 		Image.Size = UDim2.new(0, 15, 0, 20)
-		Image.ZIndex = 3
+		Image.ZIndex = 15
 		Image.Image = "rbxassetid://8539638324"
 		Image.ImageColor3 = Menu.Accent
 		Image.Parent = self.Screen
@@ -879,7 +879,7 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
     local Container = GetContainer(Tab_Name, Container_Name)
     local Label = CreateLabel(Container.self, "CheckBox", Name, nil, UDim2.fromOffset(20, Container:GetHeight()))
     local Button = Instance.new("TextButton")
-	
+    
     local CheckBox = {self = Label}
     CheckBox.Name = Name
     CheckBox.Class = "CheckBox"
@@ -889,17 +889,18 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
     CheckBox.Value = typeof(Boolean) == "boolean" and Boolean or false
     CheckBox.Callback = typeof(Callback) == "function" and Callback or function() end
 
-	local KeybindObject = nil
-	local SelectedKey = nil
-	local Editing = false
+    local KeybindObject = nil
+    local SelectedKey = nil
+    local Editing = false
+    local KeybindMode = "Toggle"
 
     function CheckBox:Update(Value: boolean)
         self.Value = typeof(Value) == "boolean" and Value
         Button.BackgroundColor3 = self.Value and Menu.Accent or Menu.ItemColor
 
-		if KeybindObject and SelectedKey ~= nil then
-			KeybindObject:Update(Value)
-		end
+        if KeybindObject and SelectedKey ~= nil then
+            KeybindObject:Update(Value)
+        end
     end
 
     function CheckBox:SetLabel(Name: string)
@@ -966,9 +967,80 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
         HotkeyButton.TextXAlignment = Enum.TextXAlignment.Right
         HotkeyButton.Parent = Label
 
+        local Selected_Hotkey = Instance.new("Frame")
+        local HotkeyToggle = Instance.new("TextButton")
+        local HotkeyHold = Instance.new("TextButton")
+
+        Selected_Hotkey.Name = "Selected_Hotkey"
+        Selected_Hotkey.Visible = false
+        Selected_Hotkey.BackgroundColor3 = Menu.ItemColor
+        Selected_Hotkey.BorderColor3 = Menu.BorderColor
+        Selected_Hotkey.Position = UDim2.fromOffset(200, 100)
+        Selected_Hotkey.Size = UDim2.fromOffset(100, 30)
+        Selected_Hotkey.Parent = nil
+        CreateStroke(Selected_Hotkey, Color3.new(), 1)
+        AddEventListener(Selected_Hotkey, function()
+            Selected_Hotkey.BackgroundColor3 = Menu.ItemColor
+            Selected_Hotkey.BorderColor3 = Menu.BorderColor
+        end)
+
+        HotkeyToggle.Parent = Selected_Hotkey
+        HotkeyToggle.BackgroundColor3 = Menu.ItemColor
+        HotkeyToggle.BorderColor3 = Color3.new()
+        HotkeyToggle.BorderSizePixel = 0
+        HotkeyToggle.Position = UDim2.new()
+        HotkeyToggle.Size = UDim2.new(1, 0, 0, 13)
+        HotkeyToggle.Font = Menu.Font
+        HotkeyToggle.Text = "Toggle"
+        HotkeyToggle.TextColor3 = Menu.Accent
+        HotkeyToggle.TextSize = 14
+        AddEventListener(HotkeyToggle, function()
+            HotkeyToggle.BackgroundColor3 = Menu.ItemColor
+            if KeybindMode == "Toggle" then
+                HotkeyToggle.TextColor3 = Menu.Accent
+            end
+        end)
+        
+        table.insert(Connections, HotkeyToggle.MouseButton1Click:Connect(function()
+            KeybindMode = "Toggle"
+            HotkeyToggle.TextColor3 = Menu.Accent
+            HotkeyHold.TextColor3 = Color3.new(1, 1, 1)
+            Selected_Hotkey.Visible = false
+            CheckBox.Callback(CheckBox.Value)
+        end))
+
+        HotkeyHold.Parent = Selected_Hotkey
+        HotkeyHold.BackgroundColor3 = Menu.ItemColor
+        HotkeyHold.BorderColor3 = Color3.new()
+        HotkeyHold.BorderSizePixel = 0
+        HotkeyHold.Position = UDim2.new(0, 0, 0, 15)
+        HotkeyHold.Size = UDim2.new(1, 0, 0, 13)
+        HotkeyHold.Font = Menu.Font
+        HotkeyHold.Text = "Hold"
+        HotkeyHold.TextColor3 = Color3.new(1, 1, 1)
+        HotkeyHold.TextSize = 14
+        AddEventListener(HotkeyHold, function()
+            HotkeyHold.BackgroundColor3 = Menu.ItemColor
+            if KeybindMode == "Hold" then
+                HotkeyHold.TextColor3 = Menu.Accent
+            end
+        end)
+        
+        table.insert(Connections, HotkeyHold.MouseButton1Click:Connect(function()
+            KeybindMode = "Hold"
+            HotkeyHold.TextColor3 = Menu.Accent
+            HotkeyToggle.TextColor3 = Color3.new(1, 1, 1)
+            Selected_Hotkey.Visible = false
+            CheckBox.Callback(CheckBox.Value)
+        end))
+
         table.insert(Connections, HotkeyButton.MouseButton1Click:Connect(function()
-            HotkeyButton.Text = "..."
+            HotkeyButton.Text = "[...]"
             Editing = true
+        end))
+
+        table.insert(Connections, HotkeyButton.MouseButton2Click:Connect(function()
+            UpdateSelected(Selected_Hotkey, HotkeyButton, UDim2.fromOffset(100, 0))
         end))
 
         table.insert(Connections, UserInput.InputBegan:Connect(function(Input)
@@ -983,25 +1055,36 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
                     HotkeyButton.Text = "[" .. Key.Name .. "]"
                     Editing = false
 
-					KeybindObject:Update(Key.Name)
-					KeybindObject:Update(CheckBox.Value)
-				elseif Key == HotkeyRemoveKey then
-					SelectedKey = nil
-					HotkeyButton.Text = "[None]"
-					Editing = false
+                    KeybindObject:Update(Key.Name)
+                    KeybindObject:Update(CheckBox.Value)
+                elseif Key == HotkeyRemoveKey then
+                    SelectedKey = nil
+                    HotkeyButton.Text = "[None]"
+                    Editing = false
 
-					KeybindObject:Update("None")
-					KeybindObject:Update(false)
+                    KeybindObject:Update("None")
+                    KeybindObject:Update(false)
                 end
             elseif SelectedKey and Input.KeyCode == SelectedKey then
-                CheckBox:SetValue(not CheckBox.Value)
+                if KeybindMode == "Toggle" then
+                    CheckBox:SetValue(not CheckBox.Value)
+                elseif KeybindMode == "Hold" then
+                    CheckBox:SetValue(true)
+                end
                 CheckBox.Callback(CheckBox.Value)
             end
         end))
-		
-		table.insert(Threads, task.delay(0.5, function()
-			KeybindObject = Menu.CurrentKeybinds.Add(Keybind_Name, "None")
-		end))
+
+        table.insert(Connections, UserInput.InputEnded:Connect(function(Input)
+            if KeybindMode == "Hold" and SelectedKey and Input.KeyCode == SelectedKey then
+                CheckBox:SetValue(false)
+                CheckBox.Callback(CheckBox.Value)
+            end
+        end))
+        
+        table.insert(Threads, task.delay(0.5, function()
+            KeybindObject = Menu.CurrentKeybinds.Add(Keybind_Name, "None")
+        end))
     end
 
     CheckBox:Update(CheckBox.Value)
