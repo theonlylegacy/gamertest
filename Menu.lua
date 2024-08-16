@@ -1084,6 +1084,7 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
         
         table.insert(Threads, task.delay(0.5, function()
             KeybindObject = Menu.CurrentKeybinds.Add(Keybind_Name, "None")
+            KeybindObject:SetVisible(Label.Visible)
         end))
     end
 
