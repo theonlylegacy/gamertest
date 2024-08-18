@@ -19,7 +19,6 @@ local Settings = {
 
 local Menu = {}
 local Tabs = {}
-local Items = {}
 local EventObjects = {}
 local Threads = {}
 local Connections = {}
@@ -37,6 +36,7 @@ local Selected = {
     Offset = UDim2.new(),
     Follow = false
 }
+
 local SelectedTab
 local SelectedTabLines = {}
 
@@ -66,7 +66,9 @@ setmetatable(Menu, {
     __newindex = function(self, Key, Value)
         __Menu[Key] = Value
         
-        if Key == "Hue" or Key == "ScreenSize" then return end
+        if Key == "Hue" or Key == "ScreenSize" then 
+            return
+        end
 
         for _, Object in pairs(EventObjects) do Object:Update() end
         for _, Notification in pairs(Notifications) do Notification:Update() end
@@ -86,6 +88,7 @@ Menu.MaxSize = Settings.MaxSize
 Menu.Hue = 0
 Menu.IsVisible = false
 Menu.ScreenSize = Vector2.new()
+Menu.Items = {}
 
 local function AddEventListener(self: GuiObject, Update: any)
     table.insert(EventObjects, {
@@ -158,7 +161,10 @@ local function UpdateSelected(Frame: Instance, Item: Item, Offset: UDim2)
     Selected = {}
 
     if Frame then
-        if Selected_Frame == Frame then return end
+        if Selected_Frame == Frame then 
+            return 
+        end
+
         Selected = {
             Frame = Frame,
             Item = Item,
@@ -173,6 +179,7 @@ end
 
 local function SetDraggable(self: GuiObject)
     table.insert(Draggables, self)
+
     local DragOrigin
     local GuiOrigin
 
@@ -181,6 +188,7 @@ local function SetDraggable(self: GuiObject)
             for _, v in ipairs(Draggables) do
                 v.ZIndex = 1
             end
+
             self.ZIndex = 2
 
             Dragging = {Gui = self, True = true}
@@ -190,11 +198,15 @@ local function SetDraggable(self: GuiObject)
     end))
 
     table.insert(Connections, UserInput.InputChanged:Connect(function(Input: InputObject, Process: boolean)
-        if Dragging.Gui ~= self then return end
+        if Dragging.Gui ~= self then 
+            return 
+        end
+        
         if not (UserInput:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)) then
             Dragging = {Gui = nil, True = false}
             return
         end
+
         if (Input.UserInputType == Enum.UserInputType.MouseMovement) then
             local Delta = Vector2.new(Input.Position.X, Input.Position.Y) - DragOrigin
             local ScreenSize = Menu.ScreenSize
@@ -203,8 +215,8 @@ local function SetDraggable(self: GuiObject)
             local ScaleY = (ScreenSize.Y * GuiOrigin.Y.Scale)
             local OffsetX = math.clamp(GuiOrigin.X.Offset + Delta.X + ScaleX,   0, ScreenSize.X - self.AbsoluteSize.X)
             local OffsetY = math.clamp(GuiOrigin.Y.Offset + Delta.Y + ScaleY, -36, ScreenSize.Y - self.AbsoluteSize.Y)
-            
             local Position = UDim2.fromOffset(OffsetX, OffsetY)
+
 			self.Position = Position
         end
     end))
@@ -213,7 +225,9 @@ end
 Menu.Screen = Instance.new("ScreenGui")
 Menu.Screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 Menu.Screen.DisplayOrder = 3
+
 protect_gui(Menu.Screen, CoreGui)
+
 Menu.ScreenSize = Menu.Screen.AbsoluteSize
 
 local MouseObject = nil
@@ -255,9 +269,13 @@ MenuScaler_Button.TextSize = 14
 MenuScaler_Button.AutoButtonColor = false
 MenuScaler_Button.Parent = Menu_Frame
 table.insert(Connections, MenuScaler_Button.InputBegan:Connect(function(Input, Process)
-    if Process then return end
+    if Process then 
+        return 
+    end
+    
     if (Input.UserInputType == Enum.UserInputType.MouseButton1) then
         UpdateSelected()
+
         Scaling = {
             True = true,
             Origin = Vector2.new(Input.Position.X, Input.Position.Y),
@@ -269,6 +287,7 @@ end))
 table.insert(Connections, MenuScaler_Button.InputEnded:Connect(function(Input, Process)
     if (Input.UserInputType == Enum.UserInputType.MouseButton1) then
         UpdateSelected()
+
         Scaling = {
             True = false,
             Origin = nil,
@@ -364,7 +383,9 @@ local function GetDictionaryLength(Dictionary: table)
 end
 
 local function UpdateSelectedTabLines(Tab: Tab)
-    if not Tab then return end
+    if not Tab then 
+        return 
+    end
 
     if (Tab.Button.AbsolutePosition.X > Tab.self.AbsolutePosition.X) then
         SelectedTabLines.Left.Visible = true
@@ -433,12 +454,12 @@ end
 
 local function CheckItemIndex(Item_Index: number, Method: string)
     assert(typeof(Item_Index) == "number", "invalid argument #1 to '" .. Method .. "' (number expected, got " .. typeof(Item_Index) .. ")")
-    assert(Item_Index <= #Items and Item_Index > 0, "invalid argument #1 to '" .. Method .. "' (index out of range")
+    assert(Item_Index <= #Menu.Items and Item_Index > 0, "invalid argument #1 to '" .. Method .. "' (index out of range")
 end
 
 function Menu:GetItem(Index: number): Item
     CheckItemIndex(Index, "GetItem")
-    return Items[Index]
+    return Menu.Items[Index]
 end
 
 function Menu:GetContainer(Tab_Name, Container_Name)
@@ -447,7 +468,7 @@ end
 
 function Menu:FindItem(Tab_Name: string, Container_Name: string, Class_Name: string, Name: string): Item
     local Result
-    for Index, Item in ipairs(Items) do
+    for Index, Item in ipairs(Menu.Items) do
         if Item.Tab == Tab_Name and Item.Container == Container_Name then
             if Item.Name == Name and (Item.Class == Class_Name) then
                 Result = Index
@@ -653,9 +674,10 @@ function Menu.Container(Tab_Name: string, Container_Name: string, Side: string):
     end
 
     function Container:SetVisible(Visible: boolean)
-        if typeof(Visible) ~= "boolean" then return end
-        if self.Visible == Visible then return end
-        
+        if typeof(Visible) ~= "boolean" or self.Visible == Visible then 
+            return 
+        end
+
         Frame.Visible = Visible
         self.Visible = Visible
         self:UpdateSize(Visible and 25 or -25, Frame)
@@ -718,7 +740,7 @@ function Menu.Label(Tab_Name: string, Container_Name: string, Name: string, Tool
     local Label = {self = Label}
     Label.Name = Name
     Label.Class = "Label"
-    Label.Index = #Items + 1
+    Label.Index = #Menu.Items + 1
     Label.Tab = Tab_Name
     Label.Container = Container_Name
 
@@ -727,16 +749,18 @@ function Menu.Label(Tab_Name: string, Container_Name: string, Name: string, Tool
     end
 
     function Label:SetVisible(Visible: boolean)
-        if typeof(Visible) ~= "boolean" then return end
-        if GuiLabel.Visible == Visible then return end
+        if typeof(Visible) ~= "boolean" or GuiLabel.Visible == Visible then 
+            return 
+        end
         
         GuiLabel.Visible = Visible
         Container:UpdateSize(Visible and 20 or -20, GuiLabel)
     end
 
     Container:UpdateSize(20)
-    table.insert(Items, Label)
-    return #Items
+    table.insert(Menu.Items, Label)
+
+    return #Menu.Items
 end
 
 function Menu.Button(Tab_Name: string, Container_Name: string, Name: string, Callback: any, ToolTip: string): Button
@@ -748,7 +772,7 @@ function Menu.Button(Tab_Name: string, Container_Name: string, Name: string, Cal
     Button.Class = "Button"
     Button.Tab = Tab_Name
     Button.Container = Container_Name
-    Button.Index = #Items + 1
+    Button.Index = #Menu.Items + 1
     Button.Callback = typeof(Callback) == "function" and Callback or function() end
 
     function Button:SetLabel(Name: string)
@@ -756,8 +780,9 @@ function Menu.Button(Tab_Name: string, Container_Name: string, Name: string, Cal
     end
 
     function Button:SetVisible(Visible: boolean)
-        if typeof(Visible) ~= "boolean" then return end
-        if GuiButton.Visible == Visible then return end
+        if typeof(Visible) ~= "boolean" or GuiButton.Visible == Visible then 
+            return 
+        end
         
         GuiButton.Visible = Visible
         Container:UpdateSize(Visible and 25 or -25, GuiButton)
@@ -795,8 +820,9 @@ function Menu.Button(Tab_Name: string, Container_Name: string, Name: string, Cal
     end))
 
     Container:UpdateSize(25)
-    table.insert(Items, Button)
-    return #Items
+    table.insert(Menu.Items, Button)
+
+    return #Menu.Items
 end
 
 function Menu.TextBox(Tab_Name: string, Container_Name: string, Name: string, Value: string, Callback: any, ToolTip: string): TextBox
@@ -809,7 +835,7 @@ function Menu.TextBox(Tab_Name: string, Container_Name: string, Name: string, Va
     TextBox.Class = "TextBox"
     TextBox.Tab = Tab_Name
     TextBox.Container = Container_Name
-    TextBox.Index = #Items + 1
+    TextBox.Index = #Menu.Items + 1
     TextBox.Value = typeof(Value) == "string" and Value or ""
     TextBox.Callback = typeof(Callback) == "function" and Callback or function() end
 
@@ -818,8 +844,9 @@ function Menu.TextBox(Tab_Name: string, Container_Name: string, Name: string, Va
     end
 
     function TextBox:SetVisible(Visible: boolean)
-        if typeof(Visible) ~= "boolean" then return end
-        if Label.Visible == Visible then return end
+        if typeof(Visible) ~= "boolean" or Label.Visible == Visible then 
+            return 
+        end
         
         Label.Visible = Visible
         Container:UpdateSize(Visible and 45 or -45, Label)
@@ -871,8 +898,9 @@ function Menu.TextBox(Tab_Name: string, Container_Name: string, Name: string, Va
     end))
 
     Container:UpdateSize(45)
-    table.insert(Items, TextBox)
-    return #Items
+    table.insert(Menu.Items, TextBox)
+
+    return #Menu.Items
 end
 
 function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, Boolean: boolean, Keybind: boolean, Keybind_Name: string, Callback: any, ToolTip: string): CheckBox
@@ -885,14 +913,14 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
     CheckBox.Class = "CheckBox"
     CheckBox.Tab = Tab_Name
     CheckBox.Container = Container_Name
-    CheckBox.Index = #Items + 1
+    CheckBox.Index = #Menu.Items + 1
     CheckBox.Value = typeof(Boolean) == "boolean" and Boolean or false
     CheckBox.Callback = typeof(Callback) == "function" and Callback or function() end
 
     local KeybindObject = nil
     local SelectedKey = nil
-    local Editing = false
     local KeybindMode = "Toggle"
+    local Editing = false
 
     function CheckBox:Update(Value: boolean)
         self.Value = typeof(Value) == "boolean" and Value
@@ -908,8 +936,9 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
     end
 
     function CheckBox:SetVisible(Visible: boolean)
-        if typeof(Visible) ~= "boolean" then return end
-        if Label.Visible == Visible then return end
+        if typeof(Visible) ~= "boolean" or Label.Visible == Visible then 
+            return 
+        end
         
         Label.Visible = Visible
         Container:UpdateSize(Visible and 20 or -20, Label)
@@ -1000,14 +1029,6 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
                 HotkeyToggle.TextColor3 = Menu.Accent
             end
         end)
-        
-        table.insert(Connections, HotkeyToggle.MouseButton1Click:Connect(function()
-            KeybindMode = "Toggle"
-            HotkeyToggle.TextColor3 = Menu.Accent
-            HotkeyHold.TextColor3 = Color3.new(1, 1, 1)
-            Selected_Hotkey.Visible = false
-            CheckBox.Callback(CheckBox.Value)
-        end))
 
         HotkeyHold.Parent = Selected_Hotkey
         HotkeyHold.BackgroundColor3 = Menu.ItemColor
@@ -1025,13 +1046,46 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
                 HotkeyHold.TextColor3 = Menu.Accent
             end
         end)
+
+        function CheckBox:GetHotkey(): string--, string
+            return SelectedKey and SelectedKey.Name, KeybindMode
+        end
+
+        function CheckBox:SetHotkey(Key: string, Mode: string)
+            SelectedKey = Key and Enum.KeyCode[Key]
+            KeybindMode = Mode
+            Editing = false
+
+            if Mode == "Toggle" then
+                HotkeyToggle.TextColor3 = Menu.Accent
+                HotkeyHold.TextColor3 = Color3.new(1, 1, 1)
+            elseif Mode == "Hold" then
+                HotkeyHold.TextColor3 = Menu.Accent
+                HotkeyToggle.TextColor3 = Color3.new(1, 1, 1)
+            end
+
+            HotkeyButton.Text = "[" .. tostring(Key or "None") .. "]"
+            KeybindObject:Update(Key or "None")
+        end
         
+        table.insert(Connections, HotkeyToggle.MouseButton1Click:Connect(function()
+            KeybindMode = "Toggle"
+            HotkeyToggle.TextColor3 = Menu.Accent
+            HotkeyHold.TextColor3 = Color3.new(1, 1, 1)
+            Selected_Hotkey.Visible = false
+            
+            CheckBox:Update(CheckBox.Value)
+            CheckBox.Callback(CheckBox.Value)
+        end))
+
         table.insert(Connections, HotkeyHold.MouseButton1Click:Connect(function()
             KeybindMode = "Hold"
             HotkeyHold.TextColor3 = Menu.Accent
             HotkeyToggle.TextColor3 = Color3.new(1, 1, 1)
             Selected_Hotkey.Visible = false
-            CheckBox.Callback(CheckBox.Value)
+
+            CheckBox:Update(false)
+            CheckBox.Callback(false)
         end))
 
         table.insert(Connections, HotkeyButton.MouseButton1Click:Connect(function()
@@ -1071,6 +1125,7 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
                 elseif KeybindMode == "Hold" then
                     CheckBox:SetValue(true)
                 end
+
                 CheckBox.Callback(CheckBox.Value)
             end
         end))
@@ -1090,8 +1145,9 @@ function Menu.CheckBox(Tab_Name: string, Container_Name: string, Name: string, B
 
     CheckBox:Update(CheckBox.Value)
     Container:UpdateSize(20)
-    table.insert(Items, CheckBox)
-    return #Items
+    table.insert(Menu.Items, CheckBox)
+
+    return #Menu.Items
 end
 
 function Menu.Hotkey(Tab_Name: string, Container_Name: string, Name: string, Key:EnumItem, Callback: any, ToolTip: string): Hotkey
@@ -1107,7 +1163,7 @@ function Menu.Hotkey(Tab_Name: string, Container_Name: string, Name: string, Key
     Hotkey.Class = "Hotkey"
     Hotkey.Tab = Tab_Name
     Hotkey.Container = Container_Name
-    Hotkey.Index = #Items + 1
+    Hotkey.Index = #Menu.Items + 1
     Hotkey.Key = typeof(Key) == "EnumItem" and Key or nil
     Hotkey.Callback = typeof(Callback) == "function" and Callback or function() end
     Hotkey.Editing = false
@@ -1126,19 +1182,20 @@ function Menu.Hotkey(Tab_Name: string, Container_Name: string, Name: string, Key
     end
 
     function Hotkey:SetVisible(Visible: boolean)
-        if typeof(Visible) ~= "boolean" then return end
-        if Label.Visible == Visible then return end
+        if typeof(Visible) ~= "boolean" or Label.Visible == Visible then 
+            return 
+        end
         
         Label.Visible = Visible
         Container:UpdateSize(Visible and 20 or -20, Label)
     end
 
-    function Hotkey:GetValue(): EnumItem--, string
-        return self.Key, self.Mode
+    function Hotkey:GetValue(): string--, string
+        return self.Key and self.Key.Name, self.Mode
     end
 
-    function Hotkey:SetValue(Key: EnumItem, Mode: string)
-        self:Update(Key, Mode)
+    function Hotkey:SetValue(Key: string, Mode: string)
+        self:Update(Key and Enum.KeyCode[Key], Mode)
     end
 
     table.insert(Connections, Label.MouseEnter:Connect(function()
@@ -1259,8 +1316,9 @@ function Menu.Hotkey(Tab_Name: string, Container_Name: string, Name: string, Key
     end))
 
     Container:UpdateSize(20)
-    table.insert(Items, Hotkey)
-    return #Items
+    table.insert(Menu.Items, Hotkey)
+
+    return #Menu.Items
 end
 
 function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min: number, Max: number, Value: number, Unit: string, Scale: number, Callback: any, ToolTip: string): Slider
@@ -1276,7 +1334,7 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
     Slider.Class = "Slider"
     Slider.Tab = Tab_Name
     Slider.Container = Container_Name
-    Slider.Index = #Items + 1
+    Slider.Index = #Menu.Items + 1
     Slider.Min = typeof(Min) == "number" and math.clamp(Min, Min, Max) or 0
     Slider.Max = typeof(Max) == "number" and Max or 100
     Slider.Value = typeof(Value) == "number" and Value or 100
@@ -1304,8 +1362,9 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
     end
 
     function Slider:SetVisible(Visible: boolean)
-        if typeof(Visible) ~= "boolean" then return end
-        if Label.Visible == Visible then return end
+        if typeof(Visible) ~= "boolean" or Label.Visible == Visible then 
+            return 
+        end
         
         Label.Visible = Visible
         Container:UpdateSize(Visible and 30 or -30, Label)
@@ -1391,11 +1450,15 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
     end))
 
     table.insert(Connections, UserInput.InputChanged:Connect(function(Input: InputObject, Process: boolean)
-        if Dragging.Gui ~= Button then return end
-        if not (UserInput:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)) then
+        if Dragging.Gui ~= Button then 
+            return 
+        end
+
+        if not UserInput:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
             Dragging = {Gui = nil, True = false}
             return
         end
+
         if (Input.UserInputType == Enum.UserInputType.MouseMovement) then
             local InputPosition = Vector2.new(Input.Position.X, Input.Position.Y)
             local Percentage = (InputPosition - Button.AbsolutePosition) / Button.AbsoluteSize
@@ -1407,8 +1470,9 @@ function Menu.Slider(Tab_Name: string, Container_Name: string, Name: string, Min
 
     Slider:SetValue(Slider.Value)
     Container:UpdateSize(35)
-    table.insert(Items, Slider)
-    return #Items
+    table.insert(Menu.Items, Slider)
+
+    return #Menu.Items
 end
 
 function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string, Color: Color3, Alpha: number, Callback: any, ToolTip: string): ColorPicker
@@ -1432,7 +1496,7 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
     ColorPicker.Tab = Tab_Name
     ColorPicker.Class = "ColorPicker"
     ColorPicker.Container = Container_Name
-    ColorPicker.Index = #Items + 1
+    ColorPicker.Index = #Menu.Items + 1
     ColorPicker.Color = typeof(Color) == "Color3" and Color or Color3.new(1, 1, 1)
     ColorPicker.Saturation = {0, 0} -- no i'm not going to use ColorPicker.Value that would confuse people with ColorPicker.Color
     ColorPicker.Alpha = typeof(Alpha) == "number" and Alpha or 0
@@ -1463,8 +1527,9 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
     end
 
     function ColorPicker:SetVisible(Visible: boolean)
-        if typeof(Visible) ~= "boolean" then return end
-        if Label.Visible == Visible then return end
+        if typeof(Visible) ~= "boolean" or Label.Visible == Visible then 
+            return 
+        end
         
         Label.Visible = Visible
         Container:UpdateSize(Visible and 20 or -20, Label)
@@ -1637,6 +1702,7 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
     table.insert(Connections, Saturation.InputBegan:Connect(function(Input: InputObject, Process: boolean)
         if (not Dragging.Gui and not Dragging.True) and (Input.UserInputType == Enum.UserInputType.MouseButton1) then
             Dragging = {Gui = Saturation, True = true}
+
             local InputPosition = Vector2.new(Input.Position.X, Input.Position.Y)
             local Percentage = (InputPosition - Saturation.AbsolutePosition) / Saturation.AbsoluteSize
             UpdateSaturation(Percentage.X, Percentage.Y)
@@ -1646,6 +1712,7 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
     table.insert(Connections, Alpha.InputBegan:Connect(function(Input: InputObject, Process: boolean)
         if (not Dragging.Gui and not Dragging.True) and (Input.UserInputType == Enum.UserInputType.MouseButton1) then
             Dragging = {Gui = Alpha, True = true}
+
             local InputPosition = Vector2.new(Input.Position.X, Input.Position.Y)
             local Percentage = (InputPosition - Alpha.AbsolutePosition) / Alpha.AbsoluteSize
             UpdateAlpha(Percentage.Y)
@@ -1655,6 +1722,7 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
     table.insert(Connections, Hue.InputBegan:Connect(function(Input: InputObject, Process: boolean)
         if (not Dragging.Gui and not Dragging.True) and (Input.UserInputType == Enum.UserInputType.MouseButton1) then
             Dragging = {Gui = Hue, True = true}
+
             local InputPosition = Vector2.new(Input.Position.X, Input.Position.Y)
             local Percentage = (InputPosition - Hue.AbsolutePosition) / Hue.AbsoluteSize
             UpdateHue(Percentage.Y)
@@ -1662,8 +1730,11 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
     end))
 
     table.insert(Connections, UserInput.InputChanged:Connect(function(Input: InputObject, Process: boolean)
-        if (Dragging.Gui ~= Saturation and Dragging.Gui ~= Alpha and Dragging.Gui ~= Hue) then return end
-        if not (UserInput:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)) then
+        if (Dragging.Gui ~= Saturation and Dragging.Gui ~= Alpha and Dragging.Gui ~= Hue) then 
+            return 
+        end
+       
+        if not UserInput:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
             Dragging = {Gui = nil, True = false}
             return
         end
@@ -1674,10 +1745,12 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
                 local Percentage = (InputPosition - Saturation.AbsolutePosition) / Saturation.AbsoluteSize
                 UpdateSaturation(Percentage.X, Percentage.Y)
             end
+
             if Dragging.Gui == Alpha then
                 local Percentage = (InputPosition - Alpha.AbsolutePosition) / Alpha.AbsoluteSize
                 UpdateAlpha(Percentage.Y)
             end
+
             if Dragging.Gui == Hue then
                 local Percentage = (InputPosition - Hue.AbsolutePosition) / Hue.AbsoluteSize
                 UpdateHue(Percentage.Y)
@@ -1688,8 +1761,9 @@ function Menu.ColorPicker(Tab_Name: string, Container_Name: string, Name: string
     ColorPicker.Hue, ColorPicker.Saturation[1], ColorPicker.Saturation[2] = ColorPicker.Color:ToHSV()
     ColorPicker:Update()
     Container:UpdateSize(20)
-    table.insert(Items, ColorPicker)
-    return #Items
+    table.insert(Menu.Items, ColorPicker)
+
+    return #Menu.Items
 end
 
 function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, Value: string, Value_Items: table, Callback: any, ToolTip: string): ComboBox
@@ -1705,7 +1779,7 @@ function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, V
     ComboBox.Class = "ComboBox"
     ComboBox.Tab = Tab_Name
     ComboBox.Container = Container_Name
-    ComboBox.Index = #Items + 1
+    ComboBox.Index = #Menu.Items + 1
     ComboBox.Callback = typeof(Callback) == "function" and Callback or function() end
     ComboBox.Value = typeof(Value) == "string" and Value or ""
     ComboBox.Items = typeof(Value_Items) == "table" and Value_Items or {}
@@ -1753,11 +1827,13 @@ function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, V
         if #ComboBox.Items >= 6 then
             List.CanvasSize += UDim2.fromOffset(0, 15)
         end
+
         table.insert(ItemObjects, Button)
     end
 
     function ComboBox:Update(Value: string, Items: any)
         UpdateValue(Value)
+        
         if typeof(Items) == "table" then
             for _, Button in ipairs(ItemObjects) do
                 Button:Destroy()
@@ -1781,9 +1857,10 @@ function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, V
     end
 
     function ComboBox:SetVisible(Visible: boolean)
-        if typeof(Visible) ~= "boolean" then return end
-        if Label.Visible == Visible then return end
-        
+        if typeof(Visible) ~= "boolean" or Label.Visible == Visible then 
+            return 
+        end
+
         Label.Visible = Visible
         Container:UpdateSize(Visible and 40 or -40, Label)
     end
@@ -1796,6 +1873,7 @@ function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, V
         if typeof(Items) == "table" then
             self.Items = Items
         end
+
         self:Update(Value, self.Items)
     end
 
@@ -1863,8 +1941,9 @@ function Menu.ComboBox(Tab_Name: string, Container_Name: string, Name: string, V
 
     ComboBox:Update(ComboBox.Value, ComboBox.Items)
     Container:UpdateSize(40)
-    table.insert(Items, ComboBox)
-    return #Items
+    table.insert(Menu.Items, ComboBox)
+
+    return #Menu.Items
 end
 
 function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string, Value_Items: table, Order_Items: table, Callback: any, ToolTip: string): MultiSelect
@@ -1880,7 +1959,7 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
     MultiSelect.Class = "MultiSelect"
     MultiSelect.Tab = Tab_Name
     MultiSelect.Container = Container_Name
-    MultiSelect.Index = #Items + 1
+    MultiSelect.Index = #Menu.Items + 1
     MultiSelect.Callback = typeof(Callback) == "function" and Callback or function() end
     MultiSelect.Items = typeof(Value_Items) == "table" and Value_Items or {}
     MultiSelect.Order = typeof(Order_Items) == "table" and Order_Items or {}
@@ -1973,8 +2052,9 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
     end
 
     function MultiSelect:SetVisible(Visible: boolean)
-        if typeof(Visible) ~= "boolean" then return end
-        if Label.Visible == Visible then return end
+        if typeof(Visible) ~= "boolean" or Label.Visible == Visible then 
+            return 
+        end
         
         Label.Visible = Visible
         Container:UpdateSize(Visible and 40 or -40, Label)
@@ -2050,8 +2130,9 @@ function Menu.MultiSelect(Tab_Name: string, Container_Name: string, Name: string
 
     MultiSelect:Update(MultiSelect.Items)
     Container:UpdateSize(40)
-    table.insert(Items, MultiSelect)
-    return #Items
+    table.insert(Menu.Items, MultiSelect)
+
+    return #Menu.Items
 end
 
 function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Multi: boolean, Value_Items: table, Callback: any, ToolTip: string): ListBox
@@ -2064,7 +2145,7 @@ function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Mu
     ListBox.Class = "ListBox"
     ListBox.Tab = Tab_Name
     ListBox.Container = Container_Name
-    ListBox.Index = #Items + 1
+    ListBox.Index = #Menu.Items + 1
     ListBox.Method = Multi and "Multi" or "Default"
     ListBox.Items = typeof(Value_Items) == "table" and Value_Items or {}
     ListBox.Value = {}
@@ -2160,18 +2241,22 @@ function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Mu
         if self.Method == "Default" then
             UpdateValue(Value)
         end
+        
         if typeof(Items) == "table" then
+            self.Items = Items
             if self.Method == "Multi" then
-                self.Items = Value
                 UpdateValue()
             end
+
             for _, Button in ipairs(ItemObjects) do
                 Button:Destroy()
             end
+    
             table.clear(ItemObjects)
-
+    
             List.CanvasSize = UDim2.new()
             List.Size = UDim2.new(1, -50, 0, 150)
+    
             if self.Method == "Default" then
                 for _, Item in ipairs(self.Items) do
                     AddItem(tostring(Item))
@@ -2195,10 +2280,11 @@ function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Mu
             end
         end
     end
-
+    
     function ListBox:SetVisible(Visible: boolean)
-        if typeof(Visible) ~= "boolean" then return end
-        if List.Visible == Visible then return end
+        if typeof(Visible) ~= "boolean" or List.Visible == Visible then 
+            return
+        end
         
         List.Visible = Visible
         Container:UpdateSize(Visible and 155 or -155, List)
@@ -2209,6 +2295,7 @@ function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Mu
             if typeof(Items) == "table" then
                 self.Items = Items
             end
+
             self:Update(Value, self.Items)
         else
             self:Update(Value)
@@ -2254,9 +2341,11 @@ function Menu.ListBox(Tab_Name: string, Container_Name: string, Name: string, Mu
     else
         ListBox:Update(ListBox.Items)
     end
+
     Container:UpdateSize(155)
-    table.insert(Items, ListBox)
-    return #Items
+    table.insert(Menu.Items, ListBox)
+
+    return #Menu.Items
 end
 
 function Menu.Notify(Content: string, Delay: number)
@@ -2575,8 +2664,9 @@ function Menu.Keybinds(): Keybinds
         end
 
         function Keybind:SetVisible(Visible: boolean)
-            if typeof(Visible) ~= "boolean" then return end
-            if Object.Visible == Visible then return end
+            if typeof(Visible) ~= "boolean" or Object.Visible == Visible then 
+                return 
+            end
         
             Object.Visible = Visible
             UpdateFrameSize()
@@ -2737,8 +2827,9 @@ function Menu.Indicators(): Indicators
         end
 
         function Indicator:SetVisible(Visible: boolean)
-            if typeof(Visible) ~= "boolean" then return end
-            if Object.Visible == Visible then return end
+            if typeof(Visible) ~= "boolean" or Object.Visible == Visible then 
+                return 
+            end
             
             Object.Visible = Visible
             UpdateFrameSize()
@@ -2875,4 +2966,5 @@ end
 
 Menu.CurrentKeybinds = Menu.Keybinds()
 Menu.CurrentKeybinds:SetPosition(UDim2.new(0, 10, 0, 410))
+
 return Menu
