@@ -6,7 +6,7 @@
 
 local Settings = {
     Accent = Color3.fromRGB(119, 120, 255),
-    Font = Enum.Font.RobotoMono,
+    Font = Enum.Font.Code,
     IsBackgroundTransparent = true,
     Rounded = false,
     Dim = false,
